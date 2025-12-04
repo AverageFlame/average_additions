@@ -1,0 +1,313 @@
+[manifest]
+version = "1.0.0"
+priority = 1
+
+# Define a var substitution rule. This searches for lines that contain {{lovely:var_name}}
+# (var_name from this example, it can really be anything) and replaces each match with the
+# provided value.
+# This example would transform print('{{lovely:var_name}}') to print('Hello world!').
+#
+# USEFUL: For when you want to reduce the complexity of repetitive injections, eg. embedding
+# release version numbers in multiple locations.
+[vars]
+ave_colour = "Ave_color"
+
+# Inject one or more lines of code before, after, or at (replacing) a line which matches
+# the provided pattern.
+#
+# USEFUL: For when you need to add / modify a small amount of code to setup initialization
+# routines, etc.
+
+# Add dunsparce image to atlas, otherwise "angry-dunsparce" will return null
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = 'self:prep_stage(G.STAGES.RUN, saveTable and saveTable.STATE or G.STATES.BLIND_SELECT)'
+position = "at"
+payload = 'self:prep_stage(G.STAGES.RUN, saveTable and saveTable.STATE or 32)'
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = 'G.STATE = G.STATES.SHOP'
+position = "at"
+payload = '''if G.STATE == G.STATES.ROUND_EVAL then
+  G.STATE = G.STATES.SHOP
+end'''
+match_indent = true
+times = 1 
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = 'G.GAME.round_resets.blind_tags.Big = get_next_tag_key()'
+position = "after"
+payload = '''G.STATE = 32'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = 'G.FUNCS.hand_text_UI_set = function(e)'
+position = "before"
+payload = '''
+G.FUNCS.ave_scroll = function (e)
+  ave_map_scroll()
+end
+'''
+match_indent = true
+times = 1
+
+
+
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''if self.STATE == self.STATES.MENU then
+  self:update_menu(dt)
+end'''
+position = "after"
+payload = '''
+if self.STATE == 32 then
+  Ave_Update_Map(dt)
+end
+'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''for k, v in pairs(self.I.CARD) do'''
+position = "before"
+payload = '''
+  aveDrawLine()
+'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''local _pool, _pool_key = get_current_pool(_type, _rarity, legendary, key_append)'''
+position = "at"
+payload = '''local _pool, _pool_key = get_current_pool(_type, AVE.rarity or _rarity, legendary, key_append)'''
+match_indent = true
+times = 1
+
+
+#boss blinds for small/big blinds, stole from cryptid because didn't want to rewrite it
+# small/big blind don't increase ante
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "if G.GAME.blind:get_type() == 'Boss' then"
+position = "at"
+payload = "if G.GAME.blind_on_deck == 'Boss' then"
+match_indent = true
+
+# small/big blind don't win game
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "if G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then"
+position = "at"
+payload = "if G.GAME.round_resets.ante >= G.GAME.win_ante and G.GAME.blind_on_deck == 'Boss' then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''if v.boss.showdown then'''
+position = "at"
+payload = '''if v.boss and v.boss.showdown then'''
+match_indent = true
+times = 1
+
+
+# get_current_pool - set up pool functionality for stages
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''
+        --create the pool
+        G.ARGS.TEMP_POOL = EMPTY(G.ARGS.TEMP_POOL)
+        local _pool, _starting_pool, _pool_key, _pool_size = G.ARGS.TEMP_POOL, nil, '', 0
+'''
+position = "after"
+payload = '''
+local ave_stage = get_current_stage()
+local rarity = nil
+'''
+match_indent = true
+times = 1
+
+# get_current_pool - set up pool functionality for stages
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''
+local rarity = _rarity or SMODS.poll_rarity("Joker", 'rarity'..G.GAME.round_resets.ante..(_append or ''))
+'''
+position = "at"
+payload = '''
+rarity = _rarity or SMODS.poll_rarity("Joker", 'rarity'..G.GAME.round_resets.ante..(_append or ''))
+'''
+match_indent = true
+times = 1
+
+# get_current_pool - set up pool functionality for stages
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''
+            local rarities = SMODS.ObjectTypes[_type].rarities
+            local rarity
+'''
+position = "at"
+payload = '''
+local rarities = SMODS.ObjectTypes[_type].rarities
+'''
+match_indent = true
+times = 1
+
+# get_current_pool - check for matching types
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''
+            if v.in_pool and type(v.in_pool) == 'function' then
+                add = in_pool and (add or pool_opts.override_base_checks)
+            end
+'''
+position = "before"
+payload = '''
+if ave_stage and v.set == 'Joker' then
+  if ave_stage.plus then
+    if ave_stage.plus.types and v.ptype then
+      local no_matches = true
+      local discard_rate = ave_stage.plus.types.rate or 0
+      if _append and string.find(_append,"extra") then
+        discard_rate = 1
+      end
+      for k, plus in ipairs(ave_stage.plus.types.type) do
+          if v.ptype == plus then
+            no_matches = false
+          end
+      end
+      if no_matches then
+        if pseudorandom(pseudoseed(v.key..G.GAME.round_resets.ante)) < discard_rate then
+            add = nil
+        end
+      end
+    end
+  end
+  if ave_stage.minus then
+    if ave_stage.minus.types and v.ptype then
+      for k, minus in ipairs(ave_stage.minus.types) do
+        if v.ptype == minus.type then
+          if pseudorandom(pseudoseed(v.key..G.GAME.round_resets.ante)) < minus.rate then
+              add = nil
+          end
+        end
+      end
+    end
+  end
+end
+'''
+match_indent = true
+times = 1
+
+# get_current_pool - add bonus keys
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''
+        --if pool is empty
+        if _pool_size == 0 then
+'''
+position = "before"
+payload = '''
+if ave_stage and ave_stage.bonus_key and _type == 'Joker' then
+    for k, v in ipairs(ave_stage.bonus_key) do
+      if not (G.GAME.used_jokers[v.key] and not SMODS.showman(v.key)) and G.P_CENTERS[v.key] then
+        local rarity_num
+        if v.rarity then 
+          rarity_num = ({Common = 1, Uncommon = 2, Rare = 3, Legendary = 4})[v.rarity] or v.rarity
+        else
+          rarity_num = G.P_CENTERS[v.key].rarity or 1
+        end
+        if rarity_num == rarity then
+          if pseudorandom(pseudoseed(v.key..G.GAME.round_resets.ante)) < v.rate then
+            print("Adding bonus key:", v.key)
+            _pool[#_pool + 1] = v.key
+            _pool_size = _pool_size + 1
+          end
+        end
+      end
+    end
+end
+
+if _type == 'Joker' and _pool_size < 15 and type(rarity)=='number' and not string.find(_append,"extra") then
+  print("Before pool size:", _pool_size)
+  local new_rarity = rarity < 3 and rarity + 1 or "poke_safari"
+  _append = _append.."extra"
+  local extra_pool, extra_key = get_current_pool(_type, new_rarity, _legendary, _append)
+  for i=1,#extra_pool do
+    if extra_pool[i] ~= 'UNAVAILABLE' then
+      _pool_size = _pool_size + 1
+    end
+    table.insert(_pool, extra_pool[i])
+  end
+  print("after pool size:", _pool_size)
+end
+'''
+match_indent = true
+times = 1
+
+# get_current_pool - set up pool functionality for stages
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''
+G.SHOP_SIGN = UIBox{
+  definition = 
+    {n=G.UIT.ROOT, config = {colour = G.C.DYN_UI.MAIN, emboss = 0.05, align = 'cm', r = 0.1, padding = 0.1}, nodes={
+      {n=G.UIT.R, config={align = "cm", padding = 0.1, minw = 4.72, minh = 3.1, colour = G.C.DYN_UI.DARK, r = 0.1}, nodes={
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          {n=G.UIT.O, config={object = shop_sign}}
+        }},
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          {n=G.UIT.O, config={object = DynaText({string = {localize('ph_improve_run')}, colours = {lighten(G.C.GOLD, 0.3)},shadow = true, rotate = true, float = true, bump = true, scale = 0.5, spacing = 1, pop_in = 1.5, maxw = 4.3})}}
+        }},
+      }},
+    }},
+  config = {
+    align="cm",
+    offset = {x=0,y=-15},
+    major = G.HUD:get_UIE_by_ID('row_blind'),
+    bond = 'Weak'
+  }
+}
+'''
+position = "after"
+payload = '''
+if AVE.MAP and AVE.MAP.current_stage then
+  local ave_card = Sprite(0, 0, G.CARD_H*1.5, G.CARD_W*1.5, G.ASSET_ATLAS[AVE.MAP.current_stage.atlas], AVE.MAP.current_stage.pos)
+  ave_card.states.collide.can = true
+  ave_card.states.hover.can = true
+  ave_card.states.drag.can = false
+  ave_card.states.click.can = false
+  ave_shop_card = UIBox{
+      definition = {n=G.UIT.ROOT, config ={align = "cm", colour = G.C.CLEAR, padding = -0.25, minw = 3}, nodes={
+          {n=G.UIT.O, config={id = 'shop_card_sign', object = ave_card}}}},
+      config = {align='cm', instance_type = 'CARDAREA',colour = G.C.CLEAR, major = G.SHOP_SIGN, bond = 'Strong', role_type = 'Minor'}
+    }
+end
+'''
+match_indent = true
+times = 1

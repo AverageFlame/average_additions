@@ -1,0 +1,177 @@
+[manifest]
+version = "1.0.0"
+priority = 1
+
+# Define a var substitution rule. This searches for lines that contain {{lovely:var_name}}
+# (var_name from this example, it can really be anything) and replaces each match with the
+# provided value.
+# This example would transform print('{{lovely:var_name}}') to print('Hello world!').
+#
+# USEFUL: For when you want to reduce the complexity of repetitive injections, eg. embedding
+# release version numbers in multiple locations.
+[vars]
+ave_colour = "Ave_color"
+
+# Inject one or more lines of code before, after, or at (replacing) a line which matches
+# the provided pattern.
+#
+# USEFUL: For when you need to add / modify a small amount of code to setup initialization
+# routines, etc.
+
+# Add dunsparce image to atlas, otherwise "angry-dunsparce" will return null
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''{name = 'chips', path = "resources/textures/"..self.SETTINGS.GRAPHICS.texture_scaling.."x/chips.png",px=29,py=29},'''
+position = "after"
+payload = '''
+{name = 'angry-dunsparce', path = "Mods/average_additions/assets/"..self.SETTINGS.GRAPHICS.texture_scaling.."x/dunsparce2.png",px=24,py=26},
+'''
+match_indent = true
+times = 1
+
+# Adds dunsparce to UI_definitions, for some reason the shop sometimes won't show the dunsparce icon if this isn't here
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''
+G.E_MANAGER:add_event(Event({
+      trigger = 'immediate',
+      func = (function()
+          G.SHOP_SIGN.alignment.offset.y = 0
+          return true
+      end)
+    }))'''
+position = "after"
+payload = '''
+Dunsparce = Sprite(0,0, 0.5, 0.5, G.ASSET_ATLAS["angry-dunsparce"])'''
+match_indent = true
+times = 1
+
+
+# Have reroll update function assign the proper colors
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''
+e.config.colour = G.C.GREEN
+e.config.button = 'reroll_shop''''
+position = "at"
+payload = '''
+e.config.colour = {{lovely:ave_colour}}
+e.config.button = 'reroll_shop''''
+match_indent = true
+times = 1
+
+
+# Adds an extra parent node to the "next round" button, to prevent it from getting deleted when reroll button changes
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''{n=G.UIT.R,config={id = 'next_round_button', align = "cm", minw = 2.8, minh = 1.5, r=0.15,colour = G.C.RED, one_press = true, button = 'toggle_shop', hover = true,shadow = true}, nodes = {
+  {n=G.UIT.R, config={align = "cm", padding = 0.07, focus_args = {button = 'y', orientation = 'cr'}, func = 'set_button_pip'}, nodes={
+    {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
+      {n=G.UIT.T, config={text = localize('b_next_round_1'), scale = 0.4, colour = G.C.WHITE, shadow = true}}
+    }},
+    {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
+      {n=G.UIT.T, config={text = localize('b_next_round_2'), scale = 0.4, colour = G.C.WHITE, shadow = true}}
+    }}   
+  }},              
+}},'''
+position = "at"
+payload = '''{n=G.UIT.R, config={align = "cm"}, nodes = {
+  {n=G.UIT.R,config={id = 'next_round_button', align = "cm", minw = 2.8, minh = 1.5, r=0.15,colour = G.C.RED, one_press = true, button = 'toggle_shop', hover = true,shadow = true}, nodes = {
+    {n=G.UIT.R, config={align = "cm", padding = 0.07, focus_args = {button = 'y', orientation = 'cr'}, func = 'set_button_pip'}, nodes={
+      {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
+        {n=G.UIT.T, config={text = localize('b_next_round_1'), scale = 0.4, colour = G.C.WHITE, shadow = true}}
+      }},
+      {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
+        {n=G.UIT.T, config={text = localize('b_next_round_2'), scale = 0.4, colour = G.C.WHITE, shadow = true}}
+      }}   
+    }},              
+  }}
+}},'''
+match_indent = true
+times = 1
+
+# Adds and extra parent to reroll button, to prevent the "next round" button from being deleted
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''{n=G.UIT.R, config={align = "cm", minw = 2.8, minh = 1.6, r=0.15,colour = G.C.GREEN, button = 'reroll_shop', func = 'can_reroll', hover = true,shadow = true}, nodes = {
+  {n=G.UIT.R, config={align = "cm", padding = 0.07, focus_args = {button = 'x', orientation = 'cr'}, func = 'set_button_pip'}, nodes={
+    {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
+      {n=G.UIT.T, config={text = localize('k_reroll'), scale = 0.4, colour = G.C.WHITE, shadow = true}},
+    }},
+    {n=G.UIT.R, config={align = "cm", maxw = 1.3, minw = 1}, nodes={
+      {n=G.UIT.T, config={text = localize('$'), scale = 0.7, colour = G.C.WHITE, shadow = true}},
+      {n=G.UIT.T, config={ref_table = G.GAME.current_round, ref_value = 'reroll_cost', scale = 0.75, colour = G.C.WHITE, shadow = true}},
+    }}
+  }}
+}},'''
+position = "at"
+payload = '''{n=G.UIT.R, config={align = "cm"}, nodes = {
+  {n=G.UIT.R, config={id = 'ui_reroll', align = "cm", minw = 2.8, minh = 1.6, r=0.15,colour = G.C.GREEN, button = 'reroll_shop', func = 'can_reroll', hover = true,shadow = true}, nodes = {
+    {n=G.UIT.R, config={align = "cm", padding = 0.07, focus_args = {button = 'x', orientation = 'cr'}, func = 'set_button_pip'}, nodes={
+      {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
+        {n=G.UIT.T, config={text = localize('k_reroll'), scale = 0.4, colour = G.C.WHITE, shadow = true}},
+      }},
+      {n=G.UIT.R, config={align = "cm", maxw = 1.3, minw = 1}, nodes={
+        {n=G.UIT.T, config={text = localize('$'), scale = 0.7, colour = G.C.WHITE, shadow = true}},
+        {n=G.UIT.T, config={ref_table = G.GAME.current_round, ref_value = 'reroll_cost', scale = 0.75, colour = G.C.WHITE, shadow = true}},
+      }}
+    }}
+  }}
+}},'''
+match_indent = true
+times = 1
+
+# Check for dunsparce when shop is loaded after round or main menu
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''G.shop = G.shop or UIBox{
+    definition = G.UIDEF.shop(),
+    config = {align='tmi', offset = {x=0,y=G.ROOM.T.y+11},major = G.hand, bond = 'Weak'}
+}'''
+position = "after"
+payload = '''
+ave_check_dunsparce()'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS Pokermon "pokemon/pokejokers_07.lua"]'
+pattern = '''
+    return level_evo(self, card, context, "j_poke_dudunsparce")
+  end'''
+position = "at"
+payload = '''
+  if context.using_consumeable and context.consumeable.label == "transformation" then
+    G.E_MANAGER:add_event(Event({
+      blocking = false,
+      blockable = false,
+      trigger = "after",
+      delay = 4.5,
+      func = function()
+        ave_check_dunsparce()
+        return true
+      end
+    }))
+  end
+  return level_evo(self, card, context, "j_poke_dudunsparce")
+end,
+add_to_deck = function(self, card, from_debuff)
+  if G.STATE == G.STATES.SHOP then
+    ave_button_red()
+  end
+end,
+remove_from_deck = function(self, card, from_debuff)
+  if G.STATE == G.STATES.SHOP then
+    ave_button_green()
+  end
+end
+'''
+match_indent = true
+times = 1

@@ -1,0 +1,11 @@
+{
+	"id": "average_additions",
+	"name": "Average Additions",
+	"display_name": "AverageAdditions",
+	"author": ["AverageFlame"],
+	"description": "First balatro mod, just for tinkering. Intended for use with Pokermon",
+	"prefix": "ave",
+	"main_file": "main.lua",
+	"priority": 1,
+	"version": "1.0.1"
+}
