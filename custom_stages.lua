@@ -1,12 +1,36 @@
+local WIDTH, HEIGHT
+
+WIDTH  = 95
+HEIGHT = 71
+
+local function pool()
+    return true, { allow_duplicates = true }
+end
+
 SMODS.Atlas {
+  px = WIDTH,
+  py = HEIGHT,
   key = "atlas_custom_stages",
   path = "custom_areas.png",
-  px = 95,
-  py = 71
 }
 
 SMODS.Stage {
-  key = 'casino_floor',
+  key = "casino_floor",
+  atlas = "atlas_custom_stages",
+  rarity = "ave_common_stages",
+  pos = {
+    x = 0,
+    y = 0
+  },
+  pools = {
+    Stage = true
+  },
+  config = {
+    extra = {
+      mod_max_interest = 30,
+      shop_price_mult = 1.25
+    }
+  },
   loc_txt = {
     name = "Casino Floor",
     text = {
@@ -15,24 +39,41 @@ SMODS.Stage {
       "Interest cap raised to {C:green}$30{}"
     }
   },
-  display_size = {w = 95, h = 71},
-  config = {extra = {mod_max_interest = 30, shop_price_mult = 1.25}},
-  loc_vars = function(self, info_queue, card)
-    return { vars = { card.ability.extra.mod_max_interest, card.ability.extra.shop_price_mult * 100 } }
-  end,
-  atlas = 'atlas_custom_stages',
-  pos = {x=0,y=0},
-  rarity = 'ave_common_stages',
-  pools = {
-    ["Stage"] = true
+  display_size = {
+    w = WIDTH,
+    h = HEIGHT
   },
-  in_pool = function(self, args)
-    return true, {allow_duplicates = true}
-  end
+  loc_vars = function(_, _, card)
+    local extra = card.ability.extra
+
+    return {
+      vars = {
+        extra.mod_max_interest,
+        extra.shop_price_mult * 100
+      }
+    }
+  end,
+  in_pool = pool
 }
 
 SMODS.Stage {
-  key = 'misty_lake',
+  key = "misty_lake",
+  atlas = "atlas_custom_stages",
+  rarity = "ave_uncommon_stages",
+  pos = {
+    x = 1,
+    y = 0
+  },
+  pools = {
+    Stage = true
+  },
+  config = {
+    extra = {
+      mod_hand_size = 2,
+      spade_mult = 2,
+      heart_mult = 0.5
+    }
+  },
   loc_txt = {
     name = "Misty Lake",
     text = {
@@ -41,24 +82,42 @@ SMODS.Stage {
       "{C:green}+2{} hand size"
     }
   },
-  display_size = {w = 95, h = 71},
-  config = {extra = {mod_hand_size = 2, spade_mult = 2, heart_mult = 0.5}},
-  loc_vars = function(self, info_queue, card)
-    return { vars = { card.ability.extra.mod_hand_size, card.ability.extra.spade_mult, card.ability.extra.heart_mult } }
-  end,
-  atlas = 'atlas_custom_stages',
-  pos = {x=1,y=0},
-  rarity = 'ave_uncommon_stages',
-  pools = {
-    ["Stage"] = true
+  display_size = {
+    w = WIDTH,
+    h = HEIGHT
   },
-  in_pool = function(self, args)
-    return true, {allow_duplicates = true}
-  end
+  loc_vars = function(_, _, card)
+    local extra = card.ability.extra
+
+    return {
+      vars = {
+        extra.mod_hand_size,
+        extra.spade_mult,
+        extra.heart_mult
+      }
+    }
+  end,
+  in_pool = pool
 }
 
 SMODS.Stage {
-  key = 'ancient_temple',
+  key = "ancient_temple",
+  atlas = "atlas_custom_stages",
+  rarity = "ave_rare_stages",
+  pos = {
+    x = 2,
+    y = 0
+  },
+  pools = {
+    Stage = true
+  },
+  config = {
+    extra = {
+      joker_price_mult = 2,
+      joker_effect_mult = 2,
+      mod_hand_size = -1
+    }
+  },
   loc_txt = {
     name = "Ancient Temple",
     text = {
@@ -67,24 +126,41 @@ SMODS.Stage {
       "{C:red}-1{} starting hand size"
     }
   },
-  display_size = {w = 95, h = 71},
-  config = {extra = {joker_price_mult = 2, joker_effect_mult = 2, mod_hand_size = -1}},
-  loc_vars = function(self, info_queue, card)
-    return { vars = { card.ability.extra.joker_price_mult, card.ability.extra.joker_effect_mult, card.ability.extra.mod_hand_size } }
-  end,
-  atlas = 'atlas_custom_stages',
-  pos = {x=2,y=0},
-  rarity = 'ave_rare_stages',
-  pools = {
-    ["Stage"] = true
+  display_size = {
+    w = WIDTH,
+    h = HEIGHT
   },
-  in_pool = function(self, args)
-    return true, {allow_duplicates = true}
-  end
+  loc_vars = function(_, _, card)
+    local extra = card.ability.extra
+    
+    return {
+      vars = {
+        extra.joker_price_mult,
+        extra.joker_effect_mult,
+        extra.mod_hand_size
+      }
+    }
+  end,
+  in_pool = pool
 }
 
 SMODS.Stage {
-  key = 'quantum_realm',
+  key = "quantum_realm",
+  atlas = "atlas_custom_stages",
+  rarity = "ave_legendary_stages",
+  pos = {
+    x = 3,
+    y = 0
+  },
+  pools = {
+    Stage = true
+  },
+  config = {
+    extra = {
+      cards_wild = true,
+      score_mult = 0.5
+    }
+  },
   loc_txt = {
     name = "Quantum Realm",
     text = {
@@ -93,22 +169,20 @@ SMODS.Stage {
       "Legendary Jokers are {C:green}2x{} more common"
     }
   },
-  display_size = {w = 95, h = 71},
-  config = {extra = {cards_wild = true, score_mult = 0.5}},
-  loc_vars = function(self, info_queue, card)
-    return { vars = { card.ability.extra.score_mult * 100 } }
-  end,
-  atlas = 'atlas_custom_stages',
-  pos = {x=3,y=0},
-  rarity = 'ave_legendary_stages',
   bonus_key = {
-    {key = 'j_golden', rate = 1, rarity = "Legendary"},
-    {key = 'j_stone', rate = 1, rarity = "Legendary"}
+    { key = "j_golden", rate = 1, rarity = "Legendary" },
+    { key = "j_stone",  rate = 1, rarity = "Legendary" }
   },
-  pools = {
-    ["Stage"] = true
+  display_size = {
+    w = WIDTH,
+    h = HEIGHT
   },
-  in_pool = function(self, args)
-    return true, {allow_duplicates = true}
-  end
+  loc_vars = function(_, _, card)
+    return {
+      vars = {
+        card.ability.extra.score_mult * 100
+      }
+    }
+  end,
+  in_pool = pool
 }
