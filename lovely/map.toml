@@ -129,7 +129,7 @@ match_indent = true
 times = 1
 
 
-# get_current_pool - set up pool functionality for stages
+# get_current_pool() - check current stage and set rarity to a more broad scope
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
@@ -146,7 +146,7 @@ local rarity = nil
 match_indent = true
 times = 1
 
-# get_current_pool - set up pool functionality for stages
+# get_current_pool() - now set rarity 
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
@@ -160,7 +160,7 @@ rarity = _rarity or SMODS.poll_rarity("Joker", 'rarity'..G.GAME.round_resets.ant
 match_indent = true
 times = 1
 
-# get_current_pool - set up pool functionality for stages
+# get_current_pool() - remove local rarity because I set it earlier in scope
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
@@ -175,7 +175,7 @@ local rarities = SMODS.ObjectTypes[_type].rarities
 match_indent = true
 times = 1
 
-# get_current_pool - check for matching types
+# get_current_pool() - check for matching types
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
@@ -186,6 +186,7 @@ position = "before"
 payload = '''
 if ave_stage and v.set == 'Joker' then
   if ave_stage.plus then
+	print("Checking plus types for:", v.key)
     if ave_stage.plus.types and v.ptype then
       local no_matches = true
       local discard_rate = ave_stage.plus.types.rate or 0
@@ -220,7 +221,7 @@ end
 match_indent = true
 times = 1
 
-# get_current_pool - add bonus keys
+# get_current_pool() - add bonus keys
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
@@ -267,7 +268,7 @@ end
 match_indent = true
 times = 1
 
-# get_current_pool - set up pool functionality for stages
+# slap current stage card onto shop sign
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"
