@@ -86,7 +86,7 @@ if load_error then
 else
   helper()
 end
-local helper, load_error = SMODS.load_file("area_backups.lua")
+local helper, load_error = SMODS.load_file("stages.lua")
 if load_error then
   sendDebugMessage ("The error is: "..load_error)
 else
