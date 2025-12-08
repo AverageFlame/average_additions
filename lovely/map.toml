@@ -279,7 +279,7 @@ G.SHOP_SIGN = UIBox{
 position = "after"
 payload = '''
 if AVE.MAP and AVE.MAP.current_stage then
-  local ave_card = Sprite(0, 0, G.CARD_H*1.5, G.CARD_W*1.5, G.ASSET_ATLAS[AVE.MAP.current_stage.atlas], AVE.MAP.current_stage.pos)
+  local ave_card = Card(0, -3, G.CARD_W, G.CARD_H, nil, AVE.MAP.current_stage)
   ave_card.states.collide.can = true
   ave_card.states.hover.can = true
   ave_card.states.drag.can = false
@@ -287,7 +287,7 @@ if AVE.MAP and AVE.MAP.current_stage then
   ave_shop_card = UIBox{
       definition = {n=G.UIT.ROOT, config ={align = "cm", colour = G.C.CLEAR, padding = -0.25, minw = 3}, nodes={
           {n=G.UIT.O, config={id = 'shop_card_sign', object = ave_card}}}},
-      config = {align='cm', instance_type = 'CARDAREA',colour = G.C.CLEAR, major = G.SHOP_SIGN, bond = 'Strong', role_type = 'Minor'}
+      config = {align='cm', offset = {x = 0, y = -0.2}, instance_type = 'CARDAREA',colour = G.C.CLEAR, major = G.SHOP_SIGN, bond = 'Strong', role_type = 'Minor'}
     }
 end
 '''
