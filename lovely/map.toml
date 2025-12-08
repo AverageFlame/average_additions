@@ -184,16 +184,13 @@ pattern = '''
 '''
 position = "before"
 payload = '''
-if ave_stage and v.set == 'Joker' then
+if add and ave_stage and v.set == 'Joker' then
   if ave_stage.plus then
-    if ave_stage.plus.types and v.ptype then
+    if ave_stage.plus.types then
       local no_matches = true
       local discard_rate = ave_stage.plus.types.rate or 0
-      if _append and string.find(_append,"extra") then
-        discard_rate = 1
-      end
       for k, plus in ipairs(ave_stage.plus.types.type) do
-          if v.ptype == plus then
+          if v.ptype and v.ptype == plus then
             no_matches = false
           end
       end
@@ -250,19 +247,6 @@ if ave_stage and ave_stage.bonus_key and _type == 'Joker' then
     end
 end
 
-if _type == 'Joker' and _pool_size < 15 and type(rarity)=='number' and not string.find(_append,"extra") then
-  print("Before pool size:", _pool_size)
-  local new_rarity = rarity < 3 and rarity + 1 or "poke_safari"
-  _append = _append.."extra"
-  local extra_pool, extra_key = get_current_pool(_type, new_rarity, _legendary, _append)
-  for i=1,#extra_pool do
-    if extra_pool[i] ~= 'UNAVAILABLE' then
-      _pool_size = _pool_size + 1
-    end
-    table.insert(_pool, extra_pool[i])
-  end
-  print("after pool size:", _pool_size)
-end
 '''
 match_indent = true
 times = 1

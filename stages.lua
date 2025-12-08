@@ -954,7 +954,7 @@ SMODS.Stage {
 }
 
 
-local legendary_rate = 0.5
+local legendary_rate = 1
 SMODS.Stage {
   key = 'ilex_forest',
   loc_txt = {
