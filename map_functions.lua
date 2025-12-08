@@ -57,36 +57,6 @@ function ave_copyBlind(blind)
     return t
 end
 
---[[ function modify(e)
-  local currentLevel = e.ability.extra
-  G.GAME.interest_cap = G.GAME.interest_cap + (currentLevel and currentLevel.mod_max_interest or 0)
-  G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * (currentLevel and currentLevel.mod_score or 1)
-  Ave_rarity = currentLevel and currentLevel.mod_joker_rarity or nil
-  if currentLevel then
-    if currentLevel.mod_shop_cards then
-        G.GAME.shop.joker_max = G.GAME.shop.joker_max + currentLevel.mod_shop_cards
-    end
-    if currentLevel.mod_shop_vouchers then
-        SMODS.change_voucher_limit(currentLevel.mod_shop_vouchers)
-        if G.GAME.modifiers.extra_vouchers + currentLevel.mod_shop_vouchers < 0 then
-            table.remove(G.GAME.current_round.voucher)
-        end
-    end
-    if currentLevel.mod_shop_boosters then
-        SMODS.change_booster_limit(currentLevel.mod_shop_boosters)
-    end
-    if currentLevel.mod_all_boss then
-        G.P_BLINDS.bl_small = ave_copyBlind(G.P_BLINDS[G.GAME.round_resets.blind_choices.Boss])
-        G.P_BLINDS.bl_small.mult = G.P_BLINDS.bl_small.mult * 0.5
-        G.P_BLINDS.bl_small.boss = nil
-        G.P_BLINDS.bl_big = ave_copyBlind(G.P_BLINDS[G.GAME.round_resets.blind_choices.Boss])
-        G.P_BLINDS.bl_big.mult = G.P_BLINDS.bl_big.mult * 0.75
-        G.P_BLINDS.bl_big.boss = nil
-    end
-  end
-end ]]
-
-
 local ave_timer = 0
 local ave_map_loaded = false
 function Ave_Update_Map(dt)
