@@ -1,4 +1,4 @@
-local AVE
+
 local noop
 
 --Do nothing function. For when you need a function to exist, but don't
