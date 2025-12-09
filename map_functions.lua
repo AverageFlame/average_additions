@@ -1,3 +1,9 @@
+local args, AVE
+
+args = { ... }
+
+AVE = args[1]
+
 local scrollWheel = 0
 local scroll = 0
 local scrolling = false

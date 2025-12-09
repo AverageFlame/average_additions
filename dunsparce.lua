@@ -1,3 +1,9 @@
+local args, AVE
+
+args = { ... }
+
+AVE = args[1]
+
 Ave_color = G.C.GREEN
 local ave_reroll_button = nil
 local Ave_red = nil

@@ -37,10 +37,10 @@ function SMODS.current_mod.reset_game_globals(start)
     AVE.rarity = nil
 end
 
-assert(SMODS.load_file("stages.lua"))()
-assert(SMODS.load_file("map_UI.lua"))()
-assert(SMODS.load_file("dunsparce.lua"))()
-assert(SMODS.load_file("map_functions.lua"))()
+assert(SMODS.load_file("stages.lua"))(AVE)
+assert(SMODS.load_file("map_UI.lua"))(AVE)
+assert(SMODS.load_file("dunsparce.lua"))(AVE)
+assert(SMODS.load_file("map_functions.lua"))(AVE)
 
 SMODS.Keybind {
   key_pressed = "g",

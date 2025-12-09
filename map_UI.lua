@@ -1,3 +1,9 @@
+local args, AVE
+
+args = { ... }
+
+AVE = args[1]
+
 --local ave_brown = {0.5, 0.4, 0.3,1}
 local ave_select = {0,0.8,1,1}
 local ave_brown = {0.2, 0.2, 0.25,1}

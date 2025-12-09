@@ -1,3 +1,9 @@
+local args, AVE
+
+args = { ... }
+
+AVE = args[1]
+
 SMODS.Atlas {
   key = "atlas_stages",
   path = "areas.png",
