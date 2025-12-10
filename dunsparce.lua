@@ -142,7 +142,7 @@ function ave_check_dunsparce()
         }
     }
 
-    red   = createButton(colors.RED, nodes.dunsparce, nodes.reroll_question)
+    red   = createButton(colors.RED, nodes.dunsparce, nodes.reroll_text_dunsparce)
     green = createButton(colors.GREEN, nodes.reroll_text)
     
     reroll_button = G.shop:get_UIE_by_ID("ui_reroll").parent
