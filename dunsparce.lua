@@ -15,10 +15,14 @@ colors = G.C
 Ave_color = colors.GREEN
 Dunsparce = Sprite(0,0, 0.5, 0.5, G.ASSET_ATLAS["angry-dunsparce"])
 
-function Ave_assign_vars()
+function ave_check_dunsparce()
+    local red, green, has_card, reroll_button
+
+    has_card = #SMODS.find_card("j_poke_dunsparce") > 0
+
     Dunsparce = Sprite(0,0, 0.5, 0.5, G.ASSET_ATLAS["angry-dunsparce"])
 
-    return {
+    red = {
         n = RootNode,
         config = { align = "cm" },
         nodes = {
@@ -105,8 +109,9 @@ function Ave_assign_vars()
                 }
             }
         }
-    },
-    {
+    }
+    
+    green = {
         n = RootNode,
         config = { align = "cm" },
         nodes = {
@@ -189,15 +194,10 @@ function Ave_assign_vars()
                 }
             }
         }
-    }, G.shop:get_UIE_by_ID("ui_reroll").parent
-end
+    }
+    
+    reroll_button = G.shop:get_UIE_by_ID("ui_reroll").parent
 
-function ave_check_dunsparce()
-    local red, green, has_card, reroll_button
-
-    has_card = #SMODS.find_card("j_poke_dunsparce") > 0
-
-    red, green, reroll_button = Ave_assign_vars()
     G.shop:get_UIE_by_ID("ui_reroll").parent:remove()
     G.shop:add_child(has_card and red or green, reroll_button)
     Ave_color = has_card and colors.RED or green
