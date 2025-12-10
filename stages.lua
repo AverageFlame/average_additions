@@ -1,9 +1,3 @@
-local args, AVE
-
-args = { ... }
-
-AVE = args[1]
-
 SMODS.Atlas {
   key = "atlas_stages",
   path = "areas.png",
@@ -88,7 +82,6 @@ SMODS.Stage = SMODS.Center:extend {
 G.stage_undiscovered = {unlocked = false, max = 1, name = "Locked", pos = {x=4,y=0}, set = "Stage", cost_mult = 1.0,config = {}}
 SMODS.UndiscoveredSprite { key = 'Stage', set = 'Stage', atlas = 'ave_atlas_stages', pos = G.stage_undiscovered.pos, display_size = {w = 95, h = 71} }
 --Sprite(self.T.x, self.T.y, self.T.w, self.T.h, G.ASSET_ATLAS["ave_atlas_stages"], G.stage_undiscovered.pos)
-
 
 SMODS.Rarity {
   key = 'common_stages',

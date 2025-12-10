@@ -1,10 +1,15 @@
-local AVE
 local noop
 
 --Do nothing function. For when you need a function to exist, but don't
 --want it to do anything.
 function noop() end
 
+--AVE *must* be global, since access to the table is needed within
+--injected code. While it's possible to locally scope access to AVE in
+--those files as well, it would incur more source code patches for little
+--benefit; due to the lack of modularity of LocalThunk's code, benefits
+--such as reducing clutter, preventing namespace collisions, and the like
+--are all nullified.
 AVE = {}
 
 function SMODS.current_mod.reset_game_globals(start)
@@ -37,10 +42,10 @@ function SMODS.current_mod.reset_game_globals(start)
     AVE.rarity = nil
 end
 
-assert(SMODS.load_file("stages.lua"))(AVE)
-assert(SMODS.load_file("map_UI.lua"))(AVE)
-assert(SMODS.load_file("dunsparce.lua"))(AVE)
-assert(SMODS.load_file("map_functions.lua"))(AVE)
+assert(SMODS.load_file("stages.lua"))()
+assert(SMODS.load_file("map_UI.lua"))()
+assert(SMODS.load_file("dunsparce.lua"))()
+assert(SMODS.load_file("map_functions.lua"))()
 
 SMODS.Keybind {
   key_pressed = "g",

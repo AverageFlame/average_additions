@@ -1,9 +1,3 @@
-local args, AVE
-
-args = { ... }
-
-AVE = args[1]
-
 --local ave_brown = {0.5, 0.4, 0.3,1}
 local ave_select = {0,0.8,1,1}
 local ave_brown = {0.2, 0.2, 0.25,1}
@@ -123,8 +117,6 @@ function ave_generateRow(i)
     end
   end
 end
-
-
 
 function ave_addPath(a, b)
     table.insert(AVE.MAP.paths, {a, b})

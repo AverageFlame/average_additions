@@ -1,9 +1,3 @@
-local args, AVE
-
-args = { ... }
-
-AVE = args[1]
-
 local scrollWheel = 0
 local scroll = 0
 local scrolling = false
@@ -126,7 +120,6 @@ function Ave_Update_Map(dt)
     if G.buttons then G.buttons:remove(); G.buttons = nil end          
 end
 
-
 function love.wheelmoved(x, y)
   if y > 0 then
     scrollWheel = scrollWheel + 1
@@ -134,7 +127,6 @@ function love.wheelmoved(x, y)
     scrollWheel = scrollWheel - 1
   end
 end
-
 
 function ave_map_scroll()
   if G.STATE == 32 and G.STATE_COMPLETE and ave_map_loaded then
@@ -177,7 +169,6 @@ function ave_map_scroll()
     end
   end
 end
-
 
 function get_current_stage()
   if AVE.MAP.current_stage then
