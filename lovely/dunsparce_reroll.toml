@@ -148,18 +148,9 @@ pattern = '''
 position = "at"
 payload = '''
   if context.using_consumeable and context.consumeable.label == "transformation" then
-    G.E_MANAGER:add_event(Event({
-      blocking = false,
-      blockable = false,
-      trigger = "after",
-      delay = 4.5,
-      func = function()
-        ave_check_dunsparce()
-        return true
-      end
-    }))
+    removeDunsparceFromDeck()
   end
-  return level_evo(self, card, context, "j_poke_dudunsparce")
+  	return level_evo(self, card, context, "j_poke_dudunsparce")
 end,
 --add/removeDunsparce functions don't exist at moment of patch creation, so
 --we have to wrap callbacks in an anonymous function to prevent crash.
