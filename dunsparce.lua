@@ -1,87 +1,101 @@
+local TextNode, RootNode, ObjectNode
+local colors
 
-Ave_color = G.C.GREEN
+--Creating variables both makes it easier to understand (since
+--localthunk is afraid of words) and is a microoptimization,
+--since we are reducing table lookups.
+--NOTE: Type of node is merely being inferred, and may actually
+--not be correct. Double check when implementing.
+TextNode   = G.UIT.T
+RootNode   = G.UIT.R --Possibly RectNode?
+ObjectNode = G.UIT.O
+
+colors = G.C
+
+Ave_color = colors.GREEN
 Dunsparce = Sprite(0,0, 0.5, 0.5, G.ASSET_ATLAS["angry-dunsparce"])
 
 function Ave_assign_vars()
     Dunsparce = Sprite(0,0, 0.5, 0.5, G.ASSET_ATLAS["angry-dunsparce"])
 
     return {
-        n = G.UIT.R,
+        n = RootNode,
         config = { align = "cm" },
         nodes = {
             {
-                n = G.UIT.R,
+                n = RootNode,
                 config = {
                     id = "ui_reroll",
+                    func = "can_reroll",
                     align = "cm",
+                    button = "reroll_shop",
+                    r = 0.15,
                     minw = 2.8,
                     minh = 1.6,
-                    r = 0.15,
-                    colour = G.C.GREEN,
-                    button = "reroll_shop",
-                    func = "can_reroll",
-                    hover = true, shadow = true
+                    hover = true,
+                    shadow = true,
+                    colour = colors.GREEN
                 },
                 nodes = {
                     {
-                        n = G.UIT.R,
+                        n = RootNode,
                         config = {
                             align = "cm",
+                            func = "set_button_pip",
                             padding = 0.07,
                             focus_args = {
                                 button = "x",
                                 orientation = "cr"
                             },
-                            func = "set_button_pip"
                         },
                         nodes = {
                             {
-                                n = G.UIT.R,
+                                n = RootNode,
                                 config = {
+                                    maxw = 1.3,
                                     align = "cm",
-                                    maxw = 1.3
                                 },
                                 nodes = {
                                     {
-                                        n = G.UIT.O,
+                                        n = ObjectNode,
                                         config = { object = Dunsparce }
                                     },
                                     {
-                                        n = G.UIT.T,
+                                        n = TextNode,
                                         config = {
                                             text = localize("ave_reroll"),
                                             scale = 1.5,
-                                            colour = G.C.WHITE,
+                                            colour = colors.WHITE,
                                             shadow = true
                                         }
                                     }
                                 }
                             },
                             {
-                                n = G.UIT.R,
+                                n = RootNode,
                                 config = {
-                                    align = "cm",
                                     maxw = 1.3,
-                                    minw = 1
+                                    minw = 1,
+                                    align = "cm"
                                 },
                                 nodes = {
                                     {
-                                        n = G.UIT.T,
+                                        n = TextNode,
                                         config = {
                                             text = localize("$"),
                                             scale = 0.7,
-                                            colour = G.C.WHITE,
+                                            colour = colors.WHITE,
                                             shadow = true
                                         }
                                     },
                                     {
-                                        n = G.UIT.T,
+                                        n = TextNode,
                                         config = {
-                                            ref_table = G.GAME.current_round,
-                                            ref_value = "reroll_cost",
                                             scale = 0.75,
-                                            colour = G.C.WHITE,
-                                            shadow = true
+                                            colour = colors.WHITE,
+                                            shadow = true,
+                                            ref_value = "reroll_cost",
+                                            ref_table = G.GAME.current_round
                                         }
                                     }
                                 }
@@ -93,78 +107,79 @@ function Ave_assign_vars()
         }
     },
     {
-        n = G.UIT.R,
+        n = RootNode,
         config = { align = "cm" },
         nodes = {
             {
-                n = G.UIT.R,
+                n = RootNode,
                 config = {
                     id = "ui_reroll",
+                    func = "can_reroll",
                     align = "cm",
+                    button = "reroll_shop",
+                    r = 0.15,
                     minw = 2.8,
                     minh = 1.6,
-                    r = 0.15,
-                    colour = G.C.GREEN,
-                    button = "reroll_shop",
-                    func = "can_reroll",
-                    hover = true, shadow = true
+                    hover = true,
+                    shadow = true,
+                    colour = colors.GREEN
                 },
                 nodes = {
                     {
-                        n = G.UIT.R,
+                        n = RootNode,
                         config = {
                             align = "cm",
+                            func = "set_button_pip",
                             padding = 0.07,
                             focus_args = {
                                 button = "x",
                                 orientation = "cr"
                             },
-                            func = "set_button_pip"
                         },
                         nodes = {
                             {
-                                n = G.UIT.R,
+                                n = RootNode,
                                 config = {
                                     align = "cm",
                                     maxw = 1.3
                                 },
                                 nodes = {
                                     {
-                                        n = G.UIT.T,
+                                        n = TextNode,
                                         config = {
                                             text = localize("k_reroll"),
                                             scale = 0.4,
-                                            colour = G.C.WHITE,
+                                            colour = colors.WHITE,
                                             shadow = true
                                         }
                                     }
                                 }
                             },
                             {
-                                n = G.UIT.R,
+                                n = RootNode,
                                 config = {
-                                    align = "cm",
                                     maxw = 1.3,
-                                    minw = 1
+                                    minw = 1,
+                                    align = "cm"
                                 },
                                 nodes = {
                                     {
-                                        n = G.UIT.T,
+                                        n = TextNode,
                                         config = {
                                             text = localize("$"),
                                             scale = 0.7,
-                                            colour = G.C.WHITE,
+                                            colour = colors.WHITE,
                                             shadow = true
                                         }
                                     },
                                     {
-                                        n = G.UIT.T,
+                                        n = TextNode,
                                         config = {
-                                            ref_table = G.GAME.current_round,
-                                            ref_value = "reroll_cost",
                                             scale = 0.75,
-                                            colour = G.C.WHITE,
-                                            shadow = true
+                                            colour = colors.WHITE,
+                                            shadow = true,
+                                            ref_table = G.GAME.current_round,
+                                            ref_value = "reroll_cost"
                                         }
                                     }
                                 }
@@ -189,12 +204,12 @@ function ave_button_red()
     local red, _, reroll_button = Ave_assign_vars()
     G.shop:get_UIE_by_ID("ui_reroll").parent:remove()
     G.shop:add_child(red, reroll_button)
-    Ave_color = G.C.RED
+    Ave_color = colors.RED
 end
 
 function ave_button_green()
     local _, green, reroll_button = Ave_assign_vars()
     G.shop:get_UIE_by_ID("ui_reroll").parent:remove()
     G.shop:add_child(green, reroll_button)
-    Ave_color = G.C.GREEN
+    Ave_color = colors.GREEN
 end
