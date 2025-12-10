@@ -13,7 +13,7 @@ function ave_generatePaths()
     ave_generateRow(i)
   end
 end
-
+-- creates a list of paths between map cells
 function ave_generate_cell(i,j,count,finalCount)
   local lines = 0
   for k = 1, AVE.MAP.dim.columns do
@@ -93,6 +93,7 @@ if j == 1 then
         lines = lines + 2
       
       end end end end end 
+	  -- if any column has 0 paths or too many paths, redo this cell
         if count[j-1] == 0 or (AVE.MAP.dim.columns <= 3 and (count[j] > 2 or count[j-1] > 2 or count[j+1] > 2)) then
         for l=1,lines do
           table.remove(AVE.MAP.paths)
@@ -181,6 +182,7 @@ function aveDrawLine()
   end
 end
 
+-- creates the actual clickable card icons for each map cell
 function ave_create_icons()
  AVE.MAP.cell_icon = {}
 for i=1, #AVE.MAP.levels do
@@ -210,6 +212,7 @@ end
 return  AVE.MAP.cell_icon
 end
 
+-- fills in each row of the map with the "background" color for each cell. Also marks selectable cells.
 function ave_create_rows()
   for i = #AVE.MAP.levels,1,-1 do
     if i == #AVE.MAP.levels then height = 0 end
@@ -235,35 +238,36 @@ function ave_create_rows()
   end
 end
 
+-- selects the stages for each map cell and stores them in AVE.MAP.levels
 function generateLevels()
     if next(AVE.MAP.levels) == nil then
-    for i=1,8 do
-      AVE.MAP.levels[i] = {}
-      AVE.MAP.selectable_levels[i] = {}
-      if i > 1 then
-      end
-      for j=1,AVE.MAP.dim.columns do
-        local _pool, _pool_key = get_current_pool("Stage", nil, nil, nil)
-        local center = pseudorandom_element(_pool, pseudoseed(_pool_key))
-        local it = 1
-        while center == 'UNAVAILABLE' do
-            it = it + 1
-            center = pseudorandom_element(_pool, pseudoseed(_pool_key..'_resample'..it))
-        end
-        center = G.P_CENTERS[center]
-        AVE.MAP.levels[i][j] = {}
-        AVE.MAP.levels[i][j] = center
-        AVE.MAP.selectable_levels[i][j] = {}
-        if G.GAME.round_resets.ante == 1 and i == 1 then
-          AVE.MAP.selectable_levels[i][j] = 1
-        else
-          AVE.MAP.selectable_levels[i][j] = 0
-        end
-      end
-    end
-  end
+		-- G.GAME.win_ante is usually 8
+		for i=1,G.GAME.win_ante do
+		AVE.MAP.levels[i] = {}
+		AVE.MAP.selectable_levels[i] = {}
+		for j=1,AVE.MAP.dim.columns do
+			local _pool, _pool_key = get_current_pool("Stage", nil, nil, nil)
+			local center = pseudorandom_element(_pool, pseudoseed(_pool_key))
+			local it = 1
+			while center == 'UNAVAILABLE' do
+				it = it + 1
+				center = pseudorandom_element(_pool, pseudoseed(_pool_key..'_resample'..it))
+			end
+			center = G.P_CENTERS[center]
+			AVE.MAP.levels[i][j] = {}
+			AVE.MAP.levels[i][j] = center
+			AVE.MAP.selectable_levels[i][j] = {}
+			if G.GAME.round_resets.ante % G.GAME.win_ante == 1 and i == 1 then
+			AVE.MAP.selectable_levels[i][j] = 1
+			else
+			AVE.MAP.selectable_levels[i][j] = 0
+			end
+		end
+		end
+  	end
 end
 
+-- creates the overall map UI structure
 function createMapUI()
   mapUI = {n=G.UIT.ROOT, config = {align = 'cm', colour = G.C.CLEAR, maxw = AVE.MAP.dim.w}, nodes={
       {n=G.UIT.C, config = {align = "cm", padding= 0.03, colour = G.C.UI.TRANSPARENT_DARK, r=0.1}, nodes={
@@ -272,7 +276,7 @@ function createMapUI()
             {n=G.UIT.R, config={align = "cm", colour = G.C.CLEAR, minh = 8}},
             {n=G.UIT.R, config={id = 'map_wrapper', align = "bm", minh = 0, colour = G.C.DYN_UI.MAIN, maxw = AVE.MAP.dim.w, padding = 0.05, r=0.1}, nodes={
               {n=G.UIT.C, config={id = 'aveScroll', align = "cm", minw = 11, maxw = AVE.MAP.dim.w, r = 0.1, colour = G.C.DYN_UI.BOSS_DARK, padding = 0.1, func = 'ave_scroll'}, nodes={
-                -- wrapper for ante rows
+                -- wrapper for extra ante rows
                 {n=G.UIT.R, config={id = 'extra_rows', align = "bm", colour = G.C.CLEAR, minw = AVE.MAP.dim.w, minh = 18}}
               }}
             }},
