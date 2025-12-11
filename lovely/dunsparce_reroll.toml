@@ -149,6 +149,16 @@ position = "at"
 payload = '''
   if context.using_consumeable and context.consumeable.label == "transformation" then
     removeDunsparceFromDeck()
+	G.E_MANAGER:add_event(Event({
+      blocking = false,
+      blockable = false,
+      trigger = "after",
+      delay = 4.5,
+      func = function()
+        ave_check_dunsparce()
+        return true
+      end
+    }))
   end
   	return level_evo(self, card, context, "j_poke_dudunsparce")
 end,
