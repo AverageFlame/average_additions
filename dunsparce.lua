@@ -117,6 +117,8 @@ function ave_check_dunsparce()
 
     Dunsparce = Sprite(0,0, 0.5, 0.5, G.ASSET_ATLAS["angry-dunsparce"])
 
+	local nodes = {}
+
     nodes.dunsparce = {
         n = ObjectNode,
         config = { object = Dunsparce }
@@ -159,7 +161,7 @@ end
 --Keep track of dunsparces in deck. Prevents race conditions with `find_in_deck`.
 --To be used as a callback function.
 function addDunsparceToDeck()
-    dunsparces = dunsparces + 1
+	dunsparces = dunsparces + 1
 
     if G.STATE ~= G.STATES.SHOP then return end
 
@@ -167,7 +169,7 @@ function addDunsparceToDeck()
 end
 
 function removeDunsparceFromDeck()
-    dunsparces = dunsparces - 1
+	dunsparces = dunsparces - 1
 
     if G.STATE ~= G.STATES.SHOP then return end
 
