@@ -103,9 +103,9 @@ function Ave_Update_Map(dt)
         G.E_MANAGER:add_event(Event({
                 func = function()
                     AVE.map.alignment.offset.y = ave_map_offset
-                    if AVE.map.T.y > -30 and math.abs(AVE.map.T.y - AVE.map.VT.y) < 3 then
+                    if math.abs(AVE.map.T.y - AVE.map.VT.y) < 3 then
                       G.ROOM.jiggle = G.ROOM.jiggle + 3
-                      play_sound('polychrome1', 1.2, 0.7)
+                      play_sound('timpani', 1.2, 0.7)
                       ave_map_loaded = true
                       return true
                     end
