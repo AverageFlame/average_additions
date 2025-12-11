@@ -149,17 +149,11 @@ function ave_check_dunsparce()
     red   = createButton(colors.RED, nodes.dunsparce, nodes.reroll_text_dunsparce)
     green = createButton(colors.GREEN, nodes.reroll_text)
     
+    reroll_button = G.shop:get_UIE_by_ID("next_round_button").parent.parent.children[2]
 
-	G.E_MANAGER:add_event(Event({
-		func = function()
-			if G.shop:get_UIE_by_ID("ui_reroll") then
-				reroll_button = G.shop:get_UIE_by_ID("ui_reroll").parent
-				reroll_button:remove()
-				G.shop:add_child(dunsparces > 0 and red or green, reroll_button)
-				return true
-			end
-		end
-	}))
+    reroll_button:remove()
+
+    G.shop:add_child(dunsparces > 0 and red or green, reroll_button)
 end
 
 --Keep track of dunsparces in deck. Prevents race conditions with `find_in_deck`.
