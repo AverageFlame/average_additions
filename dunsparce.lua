@@ -17,14 +17,9 @@ Dunsparce = Sprite(0,0, 0.5, 0.5, G.ASSET_ATLAS["angry-dunsparce"])
 
 dunsparces = 0
 
---Creates either the red button or green button. Pass in the color, and
---the nodes that go on the top part. The bottom is always the reroll cost.
-
-
 --If the player has dunsparce in their deck, then this will change the reroll
 --option to be a dunsparce reroll. Otherwise, it'll be a regular reroll. 
 function ave_check_dunsparce()
-    local red, green, reroll_button, nodes
 
     Dunsparce = Sprite(0,0, 0.5, 0.5, G.ASSET_ATLAS["angry-dunsparce"])
 
