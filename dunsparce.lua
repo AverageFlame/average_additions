@@ -19,10 +19,45 @@ dunsparces = 0
 
 --Creates either the red button or green button. Pass in the color, and
 --the nodes that go on the top part. The bottom is always the reroll cost.
-function createButton(color, ...)
-    local nodes = {}
 
-    nodes.dollar_sign = {
+
+--If the player has dunsparce in their deck, then this will change the reroll
+--option to be a dunsparce reroll. Otherwise, it'll be a regular reroll. 
+function ave_check_dunsparce()
+    local red, green, reroll_button, nodes
+
+    Dunsparce = Sprite(0,0, 0.5, 0.5, G.ASSET_ATLAS["angry-dunsparce"])
+
+	local nodes = {}
+
+    nodes.dunsparce = {
+        n = ObjectNode,
+        config = { object = Dunsparce }
+    }
+
+    --Modded. "Reroll?"
+    nodes.reroll_text_dunsparce = {
+        n = TextNode,
+        config = {
+            text = localize("ave_reroll"),
+            scale = 0.5,
+            colour = colors.WHITE,
+            shadow = true
+        }
+    }
+    
+    --Vanilla. "Reroll"
+    nodes.reroll_text = {
+        n = TextNode,
+        config = {
+            text = localize("k_reroll"),
+            scale = 0.4,
+            colour = colors.WHITE,
+            shadow = true
+        }
+    }
+
+	    nodes.dollar_sign = {
         n = TextNode,
         config = {
             text = localize("$"),
@@ -59,101 +94,45 @@ function createButton(color, ...)
         }
     }
 
-    --Contains the top portion of text.
-    nodes.top = {
+	nodes.topModded = {
         n = RectNode,
         config = {
             align = "cm",
             maxw = 1.3
         },
-        nodes = { ... }
+        nodes = { 
+			nodes.dunsparce,
+			nodes.reroll_text_dunsparce
+		 }
     }
 
-    return {
+	nodes.topVanilla = {
         n = RectNode,
-        config = { align = "cm" },
-        nodes = {
-            {
-                n = RectNode,
-                config = {
-                    id = "ui_reroll",
-                    func = "can_reroll",
-                    align = "cm",
-                    button = "reroll_shop",
-                    r = 0.15,
-                    minw = 2.8,
-                    minh = 1.6,
-                    hover = true,
-                    shadow = true,
-                    colour = color
-                },
-                nodes = {
-                    {
-                        n = RectNode,
-                        config = {
-                            align = "cm",
-                            func = "set_button_pip",
-                            padding = 0.07,
-                            focus_args = {
-                                button = "x",
-                                orientation = "cr"
-                            },
-                        },
-                        nodes = {
-                            nodes.top,
-                            nodes.bottom
-                        }
-                    }
-                }
-            }
-        }
-    }
-end
-
---If the player has dunsparce in their deck, then this will change the reroll
---option to be a dunsparce reroll. Otherwise, it'll be a regular reroll. 
-function ave_check_dunsparce()
-    local red, green, reroll_button, nodes
-
-    Dunsparce = Sprite(0,0, 0.5, 0.5, G.ASSET_ATLAS["angry-dunsparce"])
-
-	local nodes = {}
-
-    nodes.dunsparce = {
-        n = ObjectNode,
-        config = { object = Dunsparce }
-    }
-
-    --Modded. "Reroll?"
-    nodes.reroll_text_dunsparce = {
-        n = TextNode,
         config = {
-            text = localize("ave_reroll"),
-            scale = 1.5,
-            colour = colors.WHITE,
-            shadow = true
-        }
-    }
-    
-    --Vanilla. "Reroll"
-    nodes.reroll_text = {
-        n = TextNode,
-        config = {
-            text = localize("k_reroll"),
-            scale = 0.4,
-            colour = colors.WHITE,
-            shadow = true
-        }
+            align = "cm",
+            maxw = 1.3
+        },
+        nodes = { 
+			nodes.reroll_text
+		 }
     }
 
-    red   = createButton(colors.RED, nodes.dunsparce, nodes.reroll_text_dunsparce)
-    green = createButton(colors.GREEN, nodes.reroll_text)
     
-    reroll_button = G.shop:get_UIE_by_ID("next_round_button").parent.parent.children[2]
+    top = G.shop:get_UIE_by_ID("next_round_button").parent.children[2].children[1].children[1]
+	bottom = G.shop:get_UIE_by_ID("next_round_button").parent.children[2].children[1].children[2]
 
-    reroll_button:remove()
+	-- check if the nodes exist, if they don't then the game will crash so we return
+	if not top or not bottom then return end
 
-    G.shop:add_child(dunsparces > 0 and red or green, reroll_button)
+    bottom:remove()
+	top:remove()
+
+    G.shop:add_child(dunsparces > 0 and nodes.topModded or nodes.topVanilla, top)
+	G.shop:add_child(nodes.bottom, bottom)
+
+	-- Ave_color is used in dunsparce_reroll.toml to change the button color
+	-- This is necessary because the reroll button color is updated every frame
+	Ave_color = dunsparces > 0 and colors.RED or colors.GREEN
 end
 
 --Keep track of dunsparces in deck. Prevents race conditions with `find_in_deck`.
