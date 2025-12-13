@@ -34,11 +34,13 @@ function SMODS.current_mod.reset_game_globals(start)
     AVE.MAP.selectable_levels = {}
     
     if AVE.rarity_weights ~= {} then
-		for i = 1, #SMODS.ObjectTypes.Joker.rarities do
-      		SMODS.ObjectTypes.Joker.rarities[i].weight = AVE.rarity_weights[i]
-    	end
-		AVE.rarity_weights = {}
-	end
+      for i = 1, #SMODS.ObjectTypes.Joker.rarities do
+        if AVE.rarity_weights[i] then
+            SMODS.ObjectTypes.Joker.rarities[i].weight = AVE.rarity_weights[i]
+        end
+      end
+      AVE.rarity_weights = {}
+    end
     
     AVE.MAP.limit         = nil
     AVE.MAP.current_stage = nil
