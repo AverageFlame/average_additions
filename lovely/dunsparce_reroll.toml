@@ -63,67 +63,7 @@ match_indent = true
 times = 1
 
 
-# Adds an extra parent node to the "next round" button, to prevent it from getting deleted when reroll button changes
-[[patches]]
-[patches.pattern]
-target = "functions/UI_definitions.lua"
-pattern = '''{n=G.UIT.R,config={id = 'next_round_button', align = "cm", minw = 2.8, minh = 1.5, r=0.15,colour = G.C.RED, one_press = true, button = 'toggle_shop', hover = true,shadow = true}, nodes = {
-  {n=G.UIT.R, config={align = "cm", padding = 0.07, focus_args = {button = 'y', orientation = 'cr'}, func = 'set_button_pip'}, nodes={
-    {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
-      {n=G.UIT.T, config={text = localize('b_next_round_1'), scale = 0.4, colour = G.C.WHITE, shadow = true}}
-    }},
-    {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
-      {n=G.UIT.T, config={text = localize('b_next_round_2'), scale = 0.4, colour = G.C.WHITE, shadow = true}}
-    }}   
-  }},              
-}},'''
-position = "at"
-payload = '''{n=G.UIT.R, config={align = "cm"}, nodes = {
-  {n=G.UIT.R,config={id = 'next_round_button', align = "cm", minw = 2.8, minh = 1.5, r=0.15,colour = G.C.RED, one_press = true, button = 'toggle_shop', hover = true,shadow = true}, nodes = {
-    {n=G.UIT.R, config={align = "cm", padding = 0.07, focus_args = {button = 'y', orientation = 'cr'}, func = 'set_button_pip'}, nodes={
-      {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
-        {n=G.UIT.T, config={text = localize('b_next_round_1'), scale = 0.4, colour = G.C.WHITE, shadow = true}}
-      }},
-      {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
-        {n=G.UIT.T, config={text = localize('b_next_round_2'), scale = 0.4, colour = G.C.WHITE, shadow = true}}
-      }}   
-    }},              
-  }}
-}},'''
-match_indent = true
-times = 1
 
-# Adds and extra parent to reroll button, to prevent the "next round" button from being deleted
-[[patches]]
-[patches.pattern]
-target = "functions/UI_definitions.lua"
-pattern = '''{n=G.UIT.R, config={align = "cm", minw = 2.8, minh = 1.6, r=0.15,colour = G.C.GREEN, button = 'reroll_shop', func = 'can_reroll', hover = true,shadow = true}, nodes = {
-  {n=G.UIT.R, config={align = "cm", padding = 0.07, focus_args = {button = 'x', orientation = 'cr'}, func = 'set_button_pip'}, nodes={
-    {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
-      {n=G.UIT.T, config={text = localize('k_reroll'), scale = 0.4, colour = G.C.WHITE, shadow = true}},
-    }},
-    {n=G.UIT.R, config={align = "cm", maxw = 1.3, minw = 1}, nodes={
-      {n=G.UIT.T, config={text = localize('$'), scale = 0.7, colour = G.C.WHITE, shadow = true}},
-      {n=G.UIT.T, config={ref_table = G.GAME.current_round, ref_value = 'reroll_cost', scale = 0.75, colour = G.C.WHITE, shadow = true}},
-    }}
-  }}
-}},'''
-position = "at"
-payload = '''{n=G.UIT.R, config={align = "cm"}, nodes = {
-  {n=G.UIT.R, config={id = 'ui_reroll', align = "cm", minw = 2.8, minh = 1.6, r=0.15,colour = G.C.GREEN, button = 'reroll_shop', func = 'can_reroll', hover = true,shadow = true}, nodes = {
-    {n=G.UIT.R, config={align = "cm", padding = 0.07, focus_args = {button = 'x', orientation = 'cr'}, func = 'set_button_pip'}, nodes={
-      {n=G.UIT.R, config={align = "cm", maxw = 1.3}, nodes={
-        {n=G.UIT.T, config={text = localize('k_reroll'), scale = 0.4, colour = G.C.WHITE, shadow = true}},
-      }},
-      {n=G.UIT.R, config={align = "cm", maxw = 1.3, minw = 1}, nodes={
-        {n=G.UIT.T, config={text = localize('$'), scale = 0.7, colour = G.C.WHITE, shadow = true}},
-        {n=G.UIT.T, config={ref_table = G.GAME.current_round, ref_value = 'reroll_cost', scale = 0.75, colour = G.C.WHITE, shadow = true}},
-      }}
-    }}
-  }}
-}},'''
-match_indent = true
-times = 1
 
 # Check for dunsparce when shop is loaded after round or main menu
 [[patches]]
@@ -148,7 +88,8 @@ pattern = '''
 position = "at"
 payload = '''
   if context.using_consumeable and context.consumeable.label == "transformation" then
-    G.E_MANAGER:add_event(Event({
+    removeDunsparceFromDeck()
+	G.E_MANAGER:add_event(Event({
       blocking = false,
       blockable = false,
       trigger = "after",
@@ -159,18 +100,12 @@ payload = '''
       end
     }))
   end
-  return level_evo(self, card, context, "j_poke_dudunsparce")
+  	return level_evo(self, card, context, "j_poke_dudunsparce")
 end,
-add_to_deck = function(self, card, from_debuff)
-  if G.STATE == G.STATES.SHOP then
-    ave_button_red()
-  end
-end,
-remove_from_deck = function(self, card, from_debuff)
-  if G.STATE == G.STATES.SHOP then
-    ave_button_green()
-  end
-end
+--add/removeDunsparce functions don't exist at moment of patch creation, so
+--we have to wrap callbacks in an anonymous function to prevent crash.
+add_to_deck = function() addDunsparceToDeck() end,
+remove_from_deck = function() removeDunsparceFromDeck() end
 '''
 match_indent = true
 times = 1

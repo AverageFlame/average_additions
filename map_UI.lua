@@ -3,6 +3,7 @@ AVE.MAP = AVE.MAP or { paths = {}, levels = {} }
 AVE.MAP.dim = {columns = 4, w = 12, h = 3.5}
 AVE.MAP.CELL = {}
 AVE.MAP.CELL.dim = { h = 2.1, w = (AVE.MAP.dim.w / AVE.MAP.dim.columns) - (0.6 / AVE.MAP.dim.columns) }
+-- These are color values
 local ave_select = {0,0.8,1,1}
 local ave_brown = {0.2, 0.2, 0.25, 1}
 
@@ -12,7 +13,7 @@ function generateLevel(num)
   AVE.MAP.levels[num] = {}
   AVE.MAP.selectable_levels[num] = {}
   for col = 1, AVE.MAP.dim.columns do
-    local _pool, _pool_key = get_current_pool("Stage", nil, nil, nil)
+    local _pool, _pool_key = get_current_pool("Stage")
     local center = pseudorandom_element(_pool, pseudoseed(_pool_key))
     local it = 1
     while center == 'UNAVAILABLE' do
@@ -20,9 +21,8 @@ function generateLevel(num)
       center = pseudorandom_element(_pool, pseudoseed(_pool_key..'_resample'..it))
     end
     center = G.P_CENTERS[center]
-    AVE.MAP.levels[num][col] = {}
     AVE.MAP.levels[num][col] = center
-    AVE.MAP.selectable_levels[num][col] = {}
+    AVE.MAP.selectable_levels[num][col] = 0
   end
 end
 
@@ -138,11 +138,11 @@ end
 
 function ave_movePath(path, rows, cols)
   -- move initial
-  local row1 = tonumber(path[1].parent.config.id:sub(1, 1)) - (rows or 0)
-  local col1 = tonumber(path[1].parent.config.id:sub(3, 3)) - (cols or 0)
+  local row1 = tonumber(string.match(path[1].parent.config.id, '%d+')) - (rows or 0)
+  local col1 = tonumber(string.match(path[1].parent.config.id, '%d+', 3)) - (cols or 0)
   -- move final
-  local row2 = tonumber(path[2].parent.config.id:sub(1, 1)) - (rows or 0)
-  local col2 = tonumber(path[2].parent.config.id:sub(3, 3)) - (cols or 0)
+  local row2 = tonumber(string.match(path[2].parent.config.id, '%d+')) - (rows or 0)
+  local col2 = tonumber(string.match(path[2].parent.config.id, '%d+', 3)) - (cols or 0)
   -- reset path
   path[1] = AVE.map:get_UIE_by_ID(row1..'-'..col1).children[1]
   path[2] = AVE.map:get_UIE_by_ID(row2..'-'..col2).children[1]
@@ -286,4 +286,20 @@ function createMapUI()
       }}
     }}
   return mapUI
+end
+
+function ave_createShopStageUI()
+  local ave_card = Card(0, -3, G.CARD_W * 1.8, G.CARD_H * 1.8, nil, AVE.MAP.current_stage)
+  ave_card.ignore_base_shader[AVE.MAP.current_stage.key] = true
+  ave_card.ignore_shadow[AVE.MAP.current_stage.key] = true
+  ave_card.children.center:set_role({major = G.SHOP_SIGN, role_type = 'Glued', draw_major = G.SHOP_SIGN})
+  ave_card.states.collide.can = true
+  ave_card.states.hover.can = true
+  ave_card.states.drag.can = false
+  ave_card.states.click.can = false
+  ave_shop_card = UIBox{
+      definition = {n=G.UIT.ROOT, config ={align = "cm", colour = G.C.CLEAR, padding = -0.25, minw = 3}, nodes={
+          {n=G.UIT.O, config={id = 'shop_card_sign', object = ave_card}}}},
+      config = {align='cm', offset = {x = 0, y = -0.2}, instance_type = 'CARDAREA', colour = G.C.CLEAR, major = G.SHOP_SIGN, bond = 'Strong', role_type = 'Minor'}
+    }
 end

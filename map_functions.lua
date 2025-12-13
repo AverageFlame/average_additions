@@ -28,12 +28,8 @@ function ave_select_level(e)
       AVE.MAP.selectable_levels[AVE.MAP.current_level[1]-1][i] = 3
     end
   end
-  if AVE.MAP.current_level[1] > 1 and AVE.MAP.current_level[1] % (G.GAME.win_ante / 2) == 1 then
-    cellRow = cellRow % (G.GAME.win_ante / 2)
-    AVE.MAP.selectable_levels[cellRow][cellColumn] = 2
-  else
-    AVE.MAP.selectable_levels[cellRow][cellColumn] = 2
-  end
+  AVE.MAP.selectable_levels[cellRow][cellColumn] = 2
+
   for i = 1, #AVE.MAP.levels do
     for j = 1, AVE.MAP.dim.columns do
        AVE.MAP.cell_icon[i][j]:remove()
@@ -63,6 +59,23 @@ function ave_copyBlind(blind)
     return t
 end
 
+function ave_followPaths()
+  local map_cycle_level = #AVE.MAP.levels
+  for _, v in pairs(AVE.MAP.paths) do
+    local targetRow, targetColumn
+    local cellRow = tonumber(string.match(v[1].parent.config.id, '%d+'))
+    local cellColumn = tonumber(string.match(v[1].parent.config.id, '%d+', 3))
+    if cellRow == AVE.MAP.current_level[1] and cellColumn == AVE.MAP.current_level[2] then
+      targetRow = tonumber(string.match(v[2].parent.config.id, '%d+'))
+      targetColumn = tonumber(string.match(v[2].parent.config.id, '%d+', 3))
+      if AVE.MAP.current_level[1] == map_cycle_level then
+        targetRow = targetRow % map_cycle_level
+      end
+      AVE.MAP.selectable_levels[targetRow][targetColumn] = 1
+    end
+  end
+end
+
 local ave_timer = 0
 local ave_map_loaded = false
 function Ave_Update_Map(dt)
@@ -70,34 +83,17 @@ function Ave_Update_Map(dt)
     if not G.STATE_COMPLETE then
       AVE.MAP.paths = AVE.MAP.paths or nil
       AVE.MAP.levels = AVE.MAP.levels or nil
+
+      local map_cycle_level = #AVE.MAP.levels
       -- moves along the path to next level
       if G.GAME.round_resets.blind_states.Small == 'Upcoming' then
         -- Follow the paths to selectable levels
-        for _, v in pairs(AVE.MAP.paths) do
-          local targetRow, targetColumn
-          local cellRow = tonumber(v[1].parent.config.id:sub(1,1))
-          local cellColumn = tonumber(v[1].parent.config.id:sub(3,3))
-          if cellRow == AVE.MAP.current_level[1] and cellColumn == AVE.MAP.current_level[2] then
-            targetRow = tonumber(v[2].parent.config.id:sub(1,1))
-            targetColumn = tonumber(v[2].parent.config.id:sub(3,3))
-            if AVE.MAP.current_level[1] > 1 and AVE.MAP.current_level[1] % (G.GAME.win_ante / 2) == 1 then
-              targetRow = targetRow % (G.GAME.win_ante / 2)
-            end
-            AVE.MAP.selectable_levels[targetRow][targetColumn] = 1
-          end
-        end
+        ave_followPaths()
         AVE.MAP.current_stage:remove()
         -- Knock the first half of the rows off of the map (so we can generate new ones)
-        if AVE.MAP.current_level[1] > 1 and AVE.MAP.current_level[1] % (G.GAME.win_ante / 2) == 1 then
-          -- clear out the paths from rows 1 through win_ante / 2
-          local new_paths = {}
-          for _, v in pairs(AVE.MAP.paths) do
-            if tonumber(v[1].parent.config.id:sub(1,1)) > (G.GAME.win_ante / 2) then
-              new_paths[#new_paths+1] = v
-            end
-          end
-          AVE.MAP.paths = new_paths
-          for _ = 1, G.GAME.win_ante / 2 do
+        if AVE.MAP.current_level[1] == map_cycle_level then
+          AVE.MAP.paths = {}
+          for _ = 1, map_cycle_level do
             table.remove(AVE.MAP.levels, 1)
           end
         end
@@ -105,19 +101,16 @@ function Ave_Update_Map(dt)
       scrollWheel = 0
 
       -- Initial level generation
-      if next(AVE.MAP.levels) == nil then
+      if next(AVE.MAP.levels) == nil or AVE.MAP.current_level[1] == map_cycle_level then
         for i = 1, G.GAME.win_ante do
           generateLevel(i)
         end
         for col = 1, AVE.MAP.dim.columns do
+          for i = 2, #AVE.MAP.levels do
+            AVE.MAP.selectable_levels[i][col] = 0
+          end
           AVE.MAP.selectable_levels[1][col] = 1
         end
-      -- Generating levels post-cycle
-      elseif AVE.MAP.current_level[1] > 1 and AVE.MAP.current_level[1] % (G.GAME.win_ante / 2) == 1 then
-        for i = G.GAME.win_ante / 2 + 1, G.GAME.win_ante do
-          generateLevel(i)
-        end
-      -- base case
       else
         for col = 1, AVE.MAP.dim.columns do
           if AVE.MAP.selectable_levels[1][col] ~= 2 then
@@ -147,14 +140,11 @@ function Ave_Update_Map(dt)
           ave_generateRow(i)
         end
       -- Moves the paths down by half
-      elseif AVE.MAP.current_level[1] > 1 and AVE.MAP.current_level[1] % (G.GAME.win_ante / 2) == 1 then
-        for _, v in ipairs(AVE.MAP.paths) do
-          ave_movePath(v, G.GAME.win_ante / 2)
-        end
-        for i = G.GAME.win_ante / 2, #AVE.MAP.levels - 1 do
+      elseif AVE.MAP.current_level[1] == map_cycle_level then
+        for i = 1, #AVE.MAP.levels - 1 do
           ave_generateRow(i)
         end
-        AVE.MAP.current_level[1] = AVE.MAP.current_level[1] - (G.GAME.win_ante / 2)
+        AVE.MAP.current_level[1] = 0
       -- Reloading the paths otherwise
       else
         ave_reloadPaths()
@@ -167,15 +157,18 @@ function Ave_Update_Map(dt)
       AVE.MAP.limit.bot = G.ROOM.T.h + (AVE.map.T.h / 2) - (AVE.map:get_UIE_by_ID('aveScroll').T.h/2)
         ---[[
         G.E_MANAGER:add_event(Event({
-                func = function()
-                    AVE.map.alignment.offset.y = ave_map_offset
-                    G.ROOM.jiggle = G.ROOM.jiggle + 3
-                    play_sound('timpani')
-                    ave_map_loaded = true
-                    return true
-                end
-                }))
-                --]]
+          trigger = 'before',
+          func = function()
+              AVE.map.alignment.offset.y = ave_map_offset
+              if math.abs(AVE.map.T.y - AVE.map.VT.y) < 3 then
+                G.ROOM.jiggle = G.ROOM.jiggle + 3
+                play_sound('timpani')
+              end
+              ave_map_loaded = true
+              return true
+          end
+          }))
+          --]]
         G.STATE_COMPLETE = true
     end
   ave_timer = ave_timer + 1
