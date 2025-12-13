@@ -76,12 +76,22 @@ SMODS.Stage = SMODS.Center:extend {
     end,
     -- this is called when the map is loaded after boss blind is defeated
     remove = function(self)
-    end
+    end,
+    load = function(self, card, card_table, other_card)
+      
+    end,
+    draw = function(self, card, layer)
+      if card.ignore_base_shader[self.key] then
+        local opacity = card.states.hover.is == true and 1 or 0.8
+        card.children.center:draw({ 1, 1, 1, opacity })
+      end
+    end,
 }
 
 G.stage_undiscovered = {unlocked = false, max = 1, name = "Locked", pos = {x=4,y=0}, set = "Stage", cost_mult = 1.0,config = {}}
 SMODS.UndiscoveredSprite { key = 'Stage', set = 'Stage', atlas = 'ave_atlas_stages', pos = G.stage_undiscovered.pos, display_size = {w = 95, h = 71} }
 --Sprite(self.T.x, self.T.y, self.T.w, self.T.h, G.ASSET_ATLAS["ave_atlas_stages"], G.stage_undiscovered.pos)
+
 
 SMODS.Rarity {
   key = 'common_stages',
@@ -201,15 +211,12 @@ AVE.BG.hgss_seafoam = {x=2,y=5}
 
 local safari_color = HEX("F2C74E")
 
-
--- ptype_list = {"Grass", "Fire", "Water", "Lightning", "Psychic", "Fighting", "Colorless", "Dark", 
--- "Metal", "Fairy", "Dragon", "Earth"}
 ---------------------------------------------------------------------------
 ---                            COMMON STAGES                            ---             
 ---------------------------------------------------------------------------
 
 local common_rate = 0.4
--- Viridian forest - Grass
+-- Viridian Forest - Grass
 SMODS.Stage {
   key = 'viridian_forest',
   loc_txt = {
@@ -234,7 +241,7 @@ SMODS.Stage {
   end
 }
 
--- Mt ember - Fire
+-- Mt. Ember - Fire
 SMODS.Stage {
   key = 'mt_mortar',
   loc_txt = {
@@ -259,7 +266,7 @@ SMODS.Stage {
   end
 }
 
--- seafoam islands - Water
+-- Slowpoke Well - Water
 SMODS.Stage {
   key = 'slowpoke_well',
   loc_txt = {
@@ -284,7 +291,7 @@ SMODS.Stage {
   end
 }
 
--- Power plant - Lightning
+-- Power Plant - Lightning
 SMODS.Stage {
   key = 'rocket_warehouse',
   loc_txt = {
@@ -309,7 +316,7 @@ SMODS.Stage {
   end
 }
 
--- pokemon tower - Psychic
+-- Pokemon Tower - Psychic
 SMODS.Stage {
   key = 'pokemon_tower',
   loc_txt = {
@@ -334,7 +341,7 @@ SMODS.Stage {
   end
 }
 
--- Sprout tower - Fighting
+-- Sprout Tower - Fighting
 SMODS.Stage {
   key = 'sprout_tower',
   loc_txt = {
@@ -359,7 +366,7 @@ SMODS.Stage {
   end
 }
 
--- union cave - Colorless
+-- Union Cave - Colorless
 SMODS.Stage {
   key = 'union_cave',
   loc_txt = {
@@ -384,7 +391,7 @@ SMODS.Stage {
   end
 }
 
--- rocket_hideout - Dark
+-- Rocket Hideout - Dark
 SMODS.Stage {
   key = 'rocket_hideout',
   loc_txt = {
@@ -409,7 +416,7 @@ SMODS.Stage {
   end
 }
 
--- mt silver - Metal
+-- Mt. Silver - Metal
 SMODS.Stage {
   key = 'mt_silver',
   loc_txt = {
@@ -434,7 +441,7 @@ SMODS.Stage {
   end
 }
 
--- berry forest - Fairy
+-- Berry Forest - Fairy
 SMODS.Stage {
   key = 'berry_forest',
   loc_txt = {
@@ -459,7 +466,7 @@ SMODS.Stage {
   end
 }
 
--- dragons den - Dragon
+-- Dragon's Den - Dragon
 SMODS.Stage {
   key = 'dragons_den',
   loc_txt = {
@@ -484,7 +491,7 @@ SMODS.Stage {
   end
 }
 
--- rock tunnel - Earth
+-- Rock Tunnel - Earth
 SMODS.Stage {
   key = 'rock_tunnel',
   loc_txt = {
@@ -515,7 +522,7 @@ SMODS.Stage {
 
 local uncommon_rate = 0.7
 
--- Mt. Moon - Earth/Psychic dual type
+-- Mt. Moon - Earth + Psychic
 SMODS.Stage {
   key = 'mt_moon',
   loc_txt = {
@@ -546,7 +553,7 @@ SMODS.Stage {
   end
 }
 
--- Cerulean Cave - Water/Psychic dual type
+-- Cerulean Cave - Water + Psychic
 SMODS.Stage {
   key = 'cerulean_cave',
   loc_txt = {
