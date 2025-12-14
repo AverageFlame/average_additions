@@ -72,9 +72,11 @@ pattern = '''if self.STATE == self.STATES.MENU then
 end'''
 position = "after"
 payload = '''
+
 if self.STATE == 32 then
   Ave_Update_Map(dt)
 end
+
 '''
 match_indent = true
 times = 1

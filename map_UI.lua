@@ -1,3 +1,7 @@
+local args, AVE
+args = { ... }
+AVE = args[1]
+
 AVE.MAP = AVE.MAP or { paths = {}, levels = {} }
 -- map dimensions, columns is # of cells in a row, w is min width of the map, h is height of each row
 AVE.MAP.dim = {columns = 4, w = 12, h = 3.5}
@@ -155,10 +159,75 @@ function ave_reloadPaths()
   end
 end
 
+-- creates the actual clickable card icons for each map cell
+function ave_create_icons()
+  AVE.MAP.cell_icon = {}
+  for i=1, #AVE.MAP.levels do
+    AVE.MAP.cell_icon[i] = {}
+    for j=1,AVE.MAP.dim.columns do
+      local card = Card(0, 0, G.CARD_W, G.CARD_H, nil, AVE.MAP.levels[i][j])
+      card.states.collide.can = true
+      card.states.hover.can = true
+      card.states.drag.can = false
+      card.states.click.can = (AVE.MAP.selectable_levels[i][j] == 1) and true or false
+      card.ability.map_id = {row = i, column = j}
+      card.click = G.FUNCS.ave_select
+      AVE.MAP.cell_icon[i][j] = UIBox{
+          definition = {n=G.UIT.ROOT, config ={align = "cm", colour = G.C.CLEAR, padding = -0.25, minw = 3}, nodes={
+              {n=G.UIT.O, config={id = 'c'..i..'-'..j, object = card}}}},
+          config = {align='cm', instance_type = 'CARD', colour = G.C.CLEAR, major = AVE.map:get_UIE_by_ID(i..'-'..j), bond = 'Strong', role_type = 'Minor'}
+        }
+      card.children.center:set_role({major = AVE.map:get_UIE_by_ID(i..'-'..j), role_type = 'Glued', draw_major = AVE.map:get_UIE_by_ID(i..'-'..j)})
+      AVE.map.cardarea:emplace(card)
+    end
+  end
+  return AVE.MAP.cell_icon
+end
+
+function ave_createShopStageUI()
+  local ave_card = Card(0, -3, G.CARD_W * 1.8, G.CARD_H * 1.8, nil, AVE.MAP.current_stage)
+  ave_card.ignore_base_shader[AVE.MAP.current_stage.key] = true
+  ave_card.ignore_shadow[AVE.MAP.current_stage.key] = true
+  ave_card.children.center:set_role({major = G.SHOP_SIGN, role_type = 'Glued', draw_major = G.SHOP_SIGN})
+  ave_card.states.collide.can = true
+  ave_card.states.hover.can = true
+  ave_card.states.drag.can = false
+  ave_card.states.click.can = false
+  ave_shop_card = UIBox{
+      definition = {n=G.UIT.ROOT, config ={align = "cm", colour = G.C.CLEAR, padding = -0.25, minw = 3}, nodes={
+          {n=G.UIT.O, config={id = 'shop_card_sign', object = ave_card}}}},
+      config = {align='cm', offset = {x = 0, y = -0.2}, instance_type = 'CARDAREA', colour = G.C.CLEAR, major = G.SHOP_SIGN, bond = 'Strong', role_type = 'Minor'}
+    }
+end
+
+-- fills in each row of the map with the "background" color for each cell. Also marks selectable cells.
+function ave_create_row_UI(level)
+  local height = level == #AVE.MAP.levels and 0 or AVE.MAP.dim.h
+  local select_color = G.C.CLEAR
+  AVE.map:add_child( {n = G.UIT.R, config = {id = "r-"..level, align = "bm", colour = G.C.CLEAR, minw = AVE.MAP.dim.w, minh = height, padding = 0.1, r = 1}}, AVE.map:get_UIE_by_ID("aveScroll").children[1] )
+  for j = 1, AVE.MAP.dim.columns do
+    if AVE.MAP.selectable_levels[level][j] == 1 then
+      select_color = ave_select
+    elseif AVE.MAP.selectable_levels[level][j] == 2 then
+      select_color = G.C.GREEN
+    elseif AVE.MAP.selectable_levels[level][j] == 3 then
+      select_color = G.C.GREY
+    else
+      select_color = G.C.CLEAR
+    end
+    AVE.map:add_child( {n = G.UIT.C, config = {id = level..'-'..j, align = "bm", colour = G.C.CLEAR, minw = AVE.MAP.CELL.dim.w, minh = AVE.MAP.CELL.dim.h}, nodes={
+      {n = G.UIT.R, config = {align = "cm", colour = select_color, padding = 0.05, r = 0.1}, nodes={
+        {n = G.UIT.C, config = {align = "cm", colour = ave_brown, minw = 3, minh = AVE.MAP.CELL.dim.h, r = 0.1}}
+      }}
+    }}, AVE.map:get_UIE_by_ID("r-"..level))
+  end
+end
+
+
 local ave_fade_target = 0
 function aveDrawLine()
   if G.STATE == 32 and G.STATE_COMPLETE and AVE.map then
-    for i=1,3 do
+    for i = 1, 3 do
       ave_select[i] = G.C.DYN_UI.MAIN[i]
     end
     -- Update Selection Color to fade in/out
@@ -188,22 +257,25 @@ function aveDrawLine()
     
     love.graphics.push()
     love.graphics.setLineWidth(ave_scale * 0.1)
-    love.graphics.setColor(ave_brown) 
-    for i, v in ipairs(AVE.MAP.paths) do
+    love.graphics.setColor(ave_brown)
+    for _, v in ipairs(AVE.MAP.paths) do
       n1 = v[1]
       n2 = v[2]
-      n1x = (n1.VT.x + (n1.VT.w/2))*ave_scale + G.ROOM.T.x*ave_scale
-      n1y = n1.VT.y*ave_scale + G.ROOM.T.y*ave_scale + 0.1*ave_scale
-      n2x = (n2.VT.x + (n2.VT.w/2))*ave_scale + G.ROOM.T.x*ave_scale 
-      n2y = (n2.VT.y + n2.VT.h)*ave_scale + G.ROOM.T.y*ave_scale - 0.1*ave_scale 
-      if n2y < (G.ROOM.T.h+G.ROOM.T.y+4)*ave_scale then
+      n1x = (n1.VT.x + (n1.VT.w / 2)+ G.ROOM.T.x) * ave_scale
+      n1y = (n1.VT.y + G.ROOM.T.y + 0.1) * ave_scale
+      n2x = (n2.VT.x + (n2.VT.w / 2) + G.ROOM.T.x ) * ave_scale
+      n2y = (n2.VT.y + n2.VT.h + G.ROOM.T.y - 0.1) * ave_scale
+      if n2y < (G.ROOM.T.h+G.ROOM.T.y+4) * ave_scale then
         ---[[
-        if AVE.MAP.current_level and AVE.MAP.current_level[1] and n1 == AVE.map:get_UIE_by_ID(AVE.MAP.current_level[1]..'-'..AVE.MAP.current_level[2]).children[1] then
-          love.graphics.setColor(ave_select)
-          love.graphics.setLineWidth(ave_scale * 0.2)
-          love.graphics.line(n1x, n1y, n2x, n2y)
-          love.graphics.setLineWidth(ave_scale * 0.1)
-          love.graphics.setColor(ave_brown)
+        if AVE.MAP.current_level and AVE.MAP.current_level[1] then
+          if tonumber(string.match(n1.parent.config.id, '%d+')) == AVE.MAP.current_level[1]
+          and tonumber(string.match(n1.parent.config.id, '%d+', 3)) == AVE.MAP.current_level[2] then
+            love.graphics.setColor(ave_select)
+            love.graphics.setLineWidth(ave_scale * 0.2)
+            love.graphics.line(n1x, n1y, n2x, n2y)
+            love.graphics.setLineWidth(ave_scale * 0.1)
+            love.graphics.setColor(ave_brown)
+          end
         end
         --]]
         love.graphics.line(n1x, n1y, n2x, n2y)
@@ -211,59 +283,6 @@ function aveDrawLine()
     end
     ave_debug = 0
     love.graphics.pop()
-  end
-end
-
--- creates the actual clickable card icons for each map cell
-function ave_create_icons()
-  AVE.MAP.cell_icon = {}
-  for i=1, #AVE.MAP.levels do
-    AVE.MAP.cell_icon[i] = {}
-    for j=1,AVE.MAP.dim.columns do
-      local card = Card(0, 0, G.CARD_W, G.CARD_H, nil, AVE.MAP.levels[i][j])
-      --local card = SMODS.create_card({key = AVE.MAP.levels[i][j].key})
-      card.states.collide.can = true
-      card.states.hover.can = true
-      card.states.drag.can = false
-      if AVE.MAP.selectable_levels[i][j] == 1 then
-        card.states.click.can = true
-      else
-        card.states.click.can = false
-      end
-      card.click = G.FUNCS.ave_select
-      AVE.MAP.cell_icon[i][j] =  {}
-      AVE.MAP.cell_icon[i][j] = UIBox{
-          definition = {n=G.UIT.ROOT, config ={align = "cm", colour = G.C.CLEAR, padding = -0.25, minw = 3}, nodes={
-              {n=G.UIT.O, config={id = 'c'..i..'-'..j, object = card}}}},
-          config = {align='cm', instance_type = 'CARD',colour = G.C.CLEAR, major = AVE.map:get_UIE_by_ID(i..'-'..j), bond = 'Strong', role_type = 'Minor'}
-        }
-      if not  AVE.MAP.cell_icon[i][j].cards then  AVE.MAP.cell_icon[i][j].cards = {} end
-      if not  AVE.MAP.cell_icon[i][j].align_cards then  AVE.MAP.cell_icon[i][j].align_cards = function() end end
-    end
-  end
-  return  AVE.MAP.cell_icon
-end
-
--- fills in each row of the map with the "background" color for each cell. Also marks selectable cells.
-function ave_create_row_UI(level)
-  local height = level == #AVE.MAP.levels and 0 or AVE.MAP.dim.h
-  local select_color = G.C.CLEAR
-  AVE.map:add_child( {n = G.UIT.R, config = {id = "r-"..level, align = "bm", colour = G.C.CLEAR, minw = AVE.MAP.dim.w, minh = height, padding = 0.1, r = 1}}, AVE.map:get_UIE_by_ID("aveScroll").children[1] )
-  for j = 1, AVE.MAP.dim.columns do
-    if AVE.MAP.selectable_levels[level][j] == 1 then
-      select_color = ave_select
-    elseif AVE.MAP.selectable_levels[level][j] == 2 then
-      select_color = G.C.GREEN
-    elseif AVE.MAP.selectable_levels[level][j] == 3 then
-      select_color = G.C.GREY
-    else
-      select_color = G.C.CLEAR
-    end
-    AVE.map:add_child( {n = G.UIT.C, config = {id = level..'-'..j, align = "bm", colour = G.C.CLEAR, minw = AVE.MAP.CELL.dim.w, minh = AVE.MAP.CELL.dim.h}, nodes={
-      {n = G.UIT.R, config = {align = "cm", colour = select_color, padding = 0.05, r = 0.1}, nodes={
-        {n = G.UIT.C, config = {align = "cm", colour = ave_brown, minw = 3, minh = AVE.MAP.CELL.dim.h, r = 0.1}}
-      }}
-    }}, AVE.map:get_UIE_by_ID("r-"..level))
   end
 end
 
@@ -286,20 +305,4 @@ function createMapUI()
       }}
     }}
   return mapUI
-end
-
-function ave_createShopStageUI()
-  local ave_card = Card(0, -3, G.CARD_W * 1.8, G.CARD_H * 1.8, nil, AVE.MAP.current_stage)
-  ave_card.ignore_base_shader[AVE.MAP.current_stage.key] = true
-  ave_card.ignore_shadow[AVE.MAP.current_stage.key] = true
-  ave_card.children.center:set_role({major = G.SHOP_SIGN, role_type = 'Glued', draw_major = G.SHOP_SIGN})
-  ave_card.states.collide.can = true
-  ave_card.states.hover.can = true
-  ave_card.states.drag.can = false
-  ave_card.states.click.can = false
-  ave_shop_card = UIBox{
-      definition = {n=G.UIT.ROOT, config ={align = "cm", colour = G.C.CLEAR, padding = -0.25, minw = 3}, nodes={
-          {n=G.UIT.O, config={id = 'shop_card_sign', object = ave_card}}}},
-      config = {align='cm', offset = {x = 0, y = -0.2}, instance_type = 'CARDAREA', colour = G.C.CLEAR, major = G.SHOP_SIGN, bond = 'Strong', role_type = 'Minor'}
-    }
 end
