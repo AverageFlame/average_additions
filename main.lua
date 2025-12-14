@@ -27,20 +27,21 @@ function SMODS.current_mod.reset_game_globals(start)
     --Remove map (map vs MAP?)
     (AVE.map or { remove = noop }):remove()
 
-    AVE.MAP.paths             = {}
-    AVE.MAP.levels            = {}
-    AVE.MAP.cell_icon         = {}
-    AVE.MAP.current_level     = {}
+    AVE.MAP.paths = {}
+    AVE.MAP.levels = {}
+    AVE.MAP.centers = {}
+    AVE.MAP.cell_icon = {}
+    AVE.MAP.current_level = {}
     AVE.MAP.selectable_levels = {}
-    
-    if AVE.rarity_weights ~= {} then
+    AVE.rarity = nil
+    if AVE.rarity_weights and AVE.rarity_weights ~= {} then
       for i = 1, #SMODS.ObjectTypes.Joker.rarities do
         if AVE.rarity_weights[i] then
             SMODS.ObjectTypes.Joker.rarities[i].weight = AVE.rarity_weights[i]
         end
       end
-      AVE.rarity_weights = {}
     end
+    AVE.rarity_weights = {}
     
     AVE.MAP.limit         = nil
     AVE.MAP.current_stage = nil

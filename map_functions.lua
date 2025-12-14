@@ -6,12 +6,6 @@ local scrollWheel = 0
 local scroll = 0
 local scrolling = false
 local scroll_amount = 0
-AVE.MAP.selectable_levels = {}
-AVE.rarity = nil
-AVE.MAP.current_stage = nil
-AVE.MAP.current_level = {}
-AVE.rarity_weights = {}
-AVE.MAP.paths = {}
 --local Ave_small_blind = {name = 'Small Blind',  defeated = false, order = 1, dollars = 3, mult = 1,  vars = {}, debuff_text = '', debuff = {}, pos = {x=0, y=0}}
 --local Ave_big_blind = {name = 'Big Blind',    defeated = false, order = 2, dollars = 4, mult = 1.5,vars = {}, debuff_text = '', debuff = {}, pos = {x=0, y=1}}
 
@@ -22,8 +16,7 @@ end
 function ave_select_level(e)
   local cellRow = e.ability.map_id.row
   local cellColumn = e.ability.map_id.column
-  AVE.MAP.current_level[1] = cellRow
-  AVE.MAP.current_level[2] = cellColumn
+  AVE.MAP.current_level = {cellRow, cellColumn}
   AVE.MAP.current_stage = e.config.center
   AVE.MAP.current_stage:modify()
   for i = 1, AVE.MAP.dim.columns do
@@ -65,13 +58,9 @@ end
 
 function ave_followPaths()
   local map_cycle_level = #AVE.MAP.levels
-  for _, v in pairs(AVE.MAP.paths) do
-    local targetRow, targetColumn
-    local cellRow = tonumber(string.match(v[1].parent.config.id, '%d+'))
-    local cellColumn = tonumber(string.match(v[1].parent.config.id, '%d+', 3))
-    if cellRow == AVE.MAP.current_level[1] and cellColumn == AVE.MAP.current_level[2] then
-      targetRow = tonumber(string.match(v[2].parent.config.id, '%d+'))
-      targetColumn = tonumber(string.match(v[2].parent.config.id, '%d+', 3))
+  for _, path in pairs(AVE.MAP.paths) do
+    if path.initial.row == AVE.MAP.current_level[1] and path.initial.col == AVE.MAP.current_level[2] then
+      local targetRow, targetColumn = path.final.row, path.final.col
       if AVE.MAP.current_level[1] == map_cycle_level then
         targetRow = targetRow % map_cycle_level
       end
@@ -90,13 +79,12 @@ function Ave_Update_Map(dt)
     if G.GAME.round_resets.blind_states.Small == 'Upcoming' then
       -- Follow the paths to selectable levels
       ave_followPaths()
-      AVE.MAP.current_stage:remove()
+      AVE.MAP.current_stage = nil
       -- Knock the first half of the rows off of the map (so we can generate new ones)
       if AVE.MAP.current_level[1] == map_cycle_level then
         AVE.MAP.paths = {}
-        for _ = 1, map_cycle_level do
-          table.remove(AVE.MAP.levels, 1)
-        end
+        AVE.MAP.levels = {}
+        AVE.MAP.centers = {}
       end
     end
     scrollWheel = 0
@@ -120,6 +108,15 @@ function Ave_Update_Map(dt)
       end
     end
 
+    if AVE.MAP.reloaded then
+      for i = 1, #AVE.MAP.levels do
+        for j = 1,AVE.MAP.dim.columns do
+          AVE.MAP.levels[i][j] = G.P_CENTERS[AVE.MAP.centers[i][j]]
+        end
+      end
+      AVE.MAP.reloaded = nil
+    end
+
     -- Stages UI
     stop_use() -- prevent use of consumables
     ease_background_colour_blind(G.STATES.SHOP) --change background color
@@ -127,8 +124,10 @@ function Ave_Update_Map(dt)
       definition = createMapUI(), --definiton for shop UI, points to UI_definitions.lua
       config = {id = 'MAINMAP', align = 'tm', major = G.ROOM_ATTACH, offset = {x = 2.75, y = -5}, bond = 'Weak', instance_type = 'CARDAREA'}
     }
-    if not AVE.map.cardarea then AVE.map.cardarea = CardArea(AVE.map.T.x, AVE.map.T.y, AVE.MAP.dim.w, AVE.MAP.dim.h * #AVE.MAP.levels,
-      {card_limit = #AVE.MAP.levels * AVE.MAP.dim.columns, type = 'Stage'}) end
+    AVE.MAP.cardarea = CardArea(AVE.map.T.x, AVE.map.T.y, AVE.MAP.dim.w, AVE.MAP.dim.h * #AVE.MAP.levels,
+      {card_limit = #AVE.MAP.levels * AVE.MAP.dim.columns, type = 'Stage'})
+    AVE.MAP.cardarea:set_role({major = AVE.map, xy_bond = 'Strong', role_type = 'Minor'})
+    AVE.MAP.cardarea.states.visible = false
     if not AVE.map.align_cards then AVE.map.align_cards = function() end end
 
     for i = #AVE.MAP.levels, 1, -1 do
@@ -147,9 +146,6 @@ function Ave_Update_Map(dt)
         ave_generateRow(i)
       end
       AVE.MAP.current_level[1] = 0
-    -- Reloading the paths otherwise
-    else
-      ave_reloadPaths()
     end
 
     -- Stages UI Nonsense
@@ -160,7 +156,7 @@ function Ave_Update_Map(dt)
     ---[[
     G.E_MANAGER:add_event(Event({
       trigger = 'after',
-      delay = 0.2,
+      delay = 0.6,
       blockable = false,
       func = function()
           aveDrawLine()
@@ -177,7 +173,11 @@ function Ave_Update_Map(dt)
     G.STATE_COMPLETE = true
   end
   ave_timer = ave_timer + 1
-  ave_map_scroll()
+  if G.GAME.PACK_INTERRUPT then
+    
+  else
+    ave_map_scroll()
+  end
   if G.buttons then G.buttons:remove(); G.buttons = nil end
 end
 

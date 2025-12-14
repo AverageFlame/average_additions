@@ -2,7 +2,7 @@ local args, AVE
 args = { ... }
 AVE = args[1]
 
-AVE.MAP = AVE.MAP or { paths = {}, levels = {} }
+AVE.MAP = AVE.MAP or { paths = {}, levels = {}, centers = {} }
 -- map dimensions, columns is # of cells in a row, w is min width of the map, h is height of each row
 AVE.MAP.dim = {columns = 4, w = 12, h = 3.5}
 AVE.MAP.CELL = {}
@@ -11,11 +11,12 @@ AVE.MAP.CELL.dim = { h = 2.1, w = (AVE.MAP.dim.w / AVE.MAP.dim.columns) - (0.6 /
 local ave_select = {0,0.8,1,1}
 local ave_brown = {0.2, 0.2, 0.25, 1}
 
--- selects the stages for each map cell and stores them in AVE.MAP.levels
+-- selects the stages for each map cell and stores them in AVE.MAP.levels 
+-- (also stores the center keys in AVE.MAP.centers for reload reasons)
 function generateLevel(num)
-  -- G.GAME.win_ante is usually 8
   AVE.MAP.levels[num] = {}
   AVE.MAP.selectable_levels[num] = {}
+  AVE.MAP.centers[num] = {}
   for col = 1, AVE.MAP.dim.columns do
     local _pool, _pool_key = get_current_pool("Stage")
     local center = pseudorandom_element(_pool, pseudoseed(_pool_key))
@@ -26,6 +27,7 @@ function generateLevel(num)
     end
     center = G.P_CENTERS[center]
     AVE.MAP.levels[num][col] = center
+    AVE.MAP.centers[num][col] = center.key
     AVE.MAP.selectable_levels[num][col] = 0
   end
 end
@@ -63,18 +65,18 @@ function ave_generateCellPaths(row, col, count, finalCount)
     local diag = col == 1 and col + 1 or col - 1
     -- Draw straight path
     if edgePathType == 1 then
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row+1)..'-'..col).children[1])
+      ave_addPath({row = row, col = col}, {row = row + 1, col = col})
       count[col] = count[col] + 1
       lines = lines + 1
     -- Draw diagonal path
     elseif edgePathType == 2 then
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row + 1)..'-'..diag).children[1])
+      ave_addPath({row = row, col = col}, {row = row + 1, col = diag})
       count[diag] = count[diag] + 1
       lines = lines + 1
     -- Draw both
     else
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row + 1)..'-'..col).children[1])
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row + 1)..'-'..diag).children[1])
+      ave_addPath({row = row, col = col}, {row = row + 1, col = col})
+      ave_addPath({row = row, col = col}, {row = row + 1, col = diag})
       count[col] = count[col] + 1
       count[diag] = count[diag] + 1
       lines = lines + 2
@@ -89,45 +91,46 @@ function ave_generateCellPaths(row, col, count, finalCount)
     end
   else
     local col_pathType = pseudorandom(pseudoseed('cell'..row..col), 1, 6)
-    -- Draw diagonal path left
-    if col_pathType == 1 then
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row + 1)..'-'..col - 1).children[1])
-      count[col - 1] = count[col - 1] + 1
-      lines = lines + 1
+    local lDiag, rDiag = col - 1, col + 1
     -- Draw straight path
-    elseif col_pathType == 2 then
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row + 1)..'-'..col).children[1])
+    if col_pathType == 1 then
+      ave_addPath({row = row, col = col}, {row = row + 1, col = col})
       count[col] = count[col] + 1
+      lines = lines + 1
+    -- Draw diagonal path left
+    elseif col_pathType == 2 then
+      ave_addPath({row = row, col = col}, {row = row + 1, col = lDiag})
+      count[lDiag] = count[lDiag] + 1
       lines = lines + 1
     -- Draw diagonal path right
     elseif col_pathType == 3 then
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row + 1)..'-'..(col + 1)).children[1])
-      count[col + 1] = count[col + 1] + 1
+      ave_addPath({row = row, col = col}, {row = row + 1, col = rDiag})
+      count[rDiag] = count[rDiag] + 1
       lines = lines + 1
     -- Draw diagonal path left + straight path
     elseif col_pathType == 4 then
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row + 1)..'-'..col - 1).children[1])
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row + 1)..'-'..col).children[1])
-      count[col - 1] = count[col - 1] + 1
+      ave_addPath({row = row, col = col}, {row = row + 1, col = lDiag})
+      ave_addPath({row = row, col = col}, {row = row + 1, col = col})
+      count[lDiag] = count[lDiag] + 1
       count[col] = count[col] + 1
       lines = lines + 2
     -- Draw diagonal path right + straight path
     elseif col_pathType == 5 then
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row+1)..'-'..col).children[1])
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row+1)..'-'..col + 1).children[1])
+      ave_addPath({row = row, col = col}, {row = row + 1, col = col})
+      ave_addPath({row = row, col = col}, {row = row + 1, col = rDiag})
       count[col] = count[col] + 1
-      count[col + 1] = count[col + 1] + 1
+      count[rDiag] = count[rDiag] + 1
       lines = lines + 2
     -- Draw diagonal path right + diagonal path left
     else
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row + 1)..'-'..col - 1).children[1])
-      ave_addPath(AVE.map:get_UIE_by_ID(row..'-'..col).children[1], AVE.map:get_UIE_by_ID((row + 1)..'-'..col + 1).children[1])
-      count[col - 1] = count[col - 1] + 1
-      count[col + 1] = count[col + 1] + 1
+      ave_addPath({row = row, col = col}, {row = row + 1, col = lDiag})
+      ave_addPath({row = row, col = col}, {row = row + 1, col = rDiag})
+      count[lDiag] = count[lDiag] + 1
+      count[rDiag] = count[rDiag] + 1
       lines = lines + 2
     end
   -- if any column has 0 paths or too many paths, redo this cell
-    if count[col - 1] == 0 or (count[col] > AVE.MAP.dim.columns - 1 or count[col-1] > AVE.MAP.dim.columns - 1 or count[col+1] > AVE.MAP.dim.columns - 1) then
+    if count[lDiag] == 0 or (count[col] > AVE.MAP.dim.columns - 1 or count[lDiag] > AVE.MAP.dim.columns - 1 or count[rDiag] > AVE.MAP.dim.columns - 1) then
       for _ = 1, lines do
         table.remove(AVE.MAP.paths)
       end
@@ -137,27 +140,20 @@ function ave_generateCellPaths(row, col, count, finalCount)
 end
 
 function ave_addPath(a, b)
-  table.insert(AVE.MAP.paths, {a, b})
+  table.insert(AVE.MAP.paths, {initial = a, final = b})
 end
 
 function ave_movePath(path, rows, cols)
-  -- move initial
-  local row1 = tonumber(string.match(path[1].parent.config.id, '%d+')) - (rows or 0)
-  local col1 = tonumber(string.match(path[1].parent.config.id, '%d+', 3)) - (cols or 0)
-  -- move final
-  local row2 = tonumber(string.match(path[2].parent.config.id, '%d+')) - (rows or 0)
-  local col2 = tonumber(string.match(path[2].parent.config.id, '%d+', 3)) - (cols or 0)
-  -- reset path
-  path[1] = AVE.map:get_UIE_by_ID(row1..'-'..col1).children[1]
-  path[2] = AVE.map:get_UIE_by_ID(row2..'-'..col2).children[1]
+  path.initial = {path.initial.row - rows, path.initial.col - cols}
+  path.final = {path.final.row - rows, path.final.col - cols}
 end
 
-function ave_reloadPaths()
-  for i, v in ipairs(AVE.MAP.paths) do
-    AVE.MAP.paths[i][1] = AVE.map:get_UIE_by_ID(v[1].parent.config.id).children[1]
-    AVE.MAP.paths[i][2] = AVE.map:get_UIE_by_ID(v[2].parent.config.id).children[1]
-  end
-end
+-- function ave_reloadPaths()
+--   for i, v in pairs(AVE.MAP.paths) do
+--     AVE.MAP.paths[i][1] = AVE.map:get_UIE_by_ID(v[1].parent.config.id).children[1]
+--     AVE.MAP.paths[i][2] = AVE.map:get_UIE_by_ID(v[2].parent.config.id).children[1]
+--   end
+-- end
 
 -- creates the actual clickable card icons for each map cell
 function ave_create_icons()
@@ -178,7 +174,7 @@ function ave_create_icons()
           config = {align='cm', instance_type = 'CARD', colour = G.C.CLEAR, major = AVE.map:get_UIE_by_ID(i..'-'..j), bond = 'Strong', role_type = 'Minor'}
         }
       card.children.center:set_role({major = AVE.map:get_UIE_by_ID(i..'-'..j), role_type = 'Glued', draw_major = AVE.map:get_UIE_by_ID(i..'-'..j)})
-      AVE.map.cardarea:emplace(card)
+      AVE.MAP.cardarea:emplace(card)
     end
   end
   return AVE.MAP.cell_icon
@@ -258,18 +254,17 @@ function aveDrawLine()
     love.graphics.push()
     love.graphics.setLineWidth(ave_scale * 0.1)
     love.graphics.setColor(ave_brown)
-    for _, v in ipairs(AVE.MAP.paths) do
-      n1 = v[1]
-      n2 = v[2]
-      n1x = (n1.VT.x + (n1.VT.w / 2)+ G.ROOM.T.x) * ave_scale
-      n1y = (n1.VT.y + G.ROOM.T.y + 0.1) * ave_scale
-      n2x = (n2.VT.x + (n2.VT.w / 2) + G.ROOM.T.x ) * ave_scale
-      n2y = (n2.VT.y + n2.VT.h + G.ROOM.T.y - 0.1) * ave_scale
+    for _, path in ipairs(AVE.MAP.paths) do
+      local n1 = AVE.map:get_UIE_by_ID(path.initial.row..'-'..path.initial.col)
+      local n2 = AVE.map:get_UIE_by_ID(path.final.row..'-'..path.final.col)
+      local n1x = (n1.VT.x + (n1.VT.w / 2)+ G.ROOM.T.x) * ave_scale
+      local n1y = (n1.VT.y + G.ROOM.T.y + 0.1) * ave_scale
+      local n2x = (n2.VT.x + (n2.VT.w / 2) + G.ROOM.T.x ) * ave_scale
+      local n2y = (n2.VT.y + n2.VT.h + G.ROOM.T.y - 0.1) * ave_scale
       if n2y < (G.ROOM.T.h+G.ROOM.T.y+4) * ave_scale then
         ---[[
         if AVE.MAP.current_level and AVE.MAP.current_level[1] then
-          if tonumber(string.match(n1.parent.config.id, '%d+')) == AVE.MAP.current_level[1]
-          and tonumber(string.match(n1.parent.config.id, '%d+', 3)) == AVE.MAP.current_level[2] then
+          if path.initial.row == AVE.MAP.current_level[1] and path.initial.col == AVE.MAP.current_level[2] then
             love.graphics.setColor(ave_select)
             love.graphics.setLineWidth(ave_scale * 0.2)
             love.graphics.line(n1x, n1y, n2x, n2y)

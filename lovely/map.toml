@@ -61,9 +61,6 @@ end
 match_indent = true
 times = 1
 
-
-
-
 [[patches]]
 [patches.pattern]
 target = "game.lua"
@@ -81,6 +78,39 @@ end
 match_indent = true
 times = 1
 
+# Saving the Map in save_run()
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = '''
+BACK = G.GAME.selected_back:save(),
+VERSION = G.VERSION
+'''
+position = "before"
+payload = '''
+MAP = AVE.MAP,
+'''
+match_indent = true
+times = 1
+
+# Reloading the Map in start_run()
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''
+self.consumeables = CardArea(
+'''
+position = "before"
+payload = '''
+if saveTable and saveTable.MAP then
+  AVE.MAP = saveTable.MAP
+  AVE.MAP.reloaded = true
+end
+'''
+match_indent = true
+times = 1
+
+
 [[patches]]
 [patches.pattern]
 target = "game.lua"
@@ -92,6 +122,9 @@ payload = '''
 match_indent = true
 times = 1
 
+
+
+# Map Pool Functions
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
