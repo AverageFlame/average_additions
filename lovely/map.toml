@@ -307,3 +307,43 @@ end
 '''
 match_indent = true
 times = 1
+
+# allow map to move off screen during consumable use
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''
+if G.round_eval and not G.round_eval.alignment.offset.py then
+      G.round_eval.alignment.offset.py = G.round_eval.alignment.offset.y
+      G.round_eval.alignment.offset.y = G.ROOM.T.y + 29
+    end
+'''
+position = "after"
+payload = '''
+if AVE.map and not AVE.map.alignment.offset.py then
+	  AVE.map.alignment.offset.py = AVE.map.alignment.offset.y
+	  AVE.map.alignment.offset.y = G.ROOM.T.y - 50
+	end
+'''
+match_indent = true
+times = 1
+
+# allow map to come back on screen during consumable use
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''
+if G.round_eval then
+                    G.round_eval.alignment.offset.y = G.round_eval.alignment.offset.py
+                    G.round_eval.alignment.offset.py = nil
+                  end
+'''
+position = "after"
+payload = '''
+if AVE.map then
+					AVE.map.alignment.offset.y = AVE.map.alignment.offset.py
+					AVE.map.alignment.offset.py = nil
+				  end
+'''
+match_indent = true
+times = 1
