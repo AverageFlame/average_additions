@@ -27,12 +27,20 @@ function SMODS.current_mod.reset_game_globals(start)
     --Remove map (map vs MAP?)
     (AVE.map or { remove = noop }):remove()
 
-    AVE.MAP.paths             = {}
-    AVE.MAP.levels            = {}
-    AVE.MAP.cell_icon         = {}
-    AVE.MAP.current_level     = {}
+    AVE.MAP.paths = {}
+    AVE.MAP.levels = {}
+    AVE.MAP.centers = {}
+    AVE.MAP.cell_icon = {}
+    AVE.MAP.current_level = {}
     AVE.MAP.selectable_levels = {}
-    
+    AVE.rarity = nil
+    if AVE.rarity_weights and AVE.rarity_weights ~= {} then
+      for i = 1, #SMODS.ObjectTypes.Joker.rarities do
+        if AVE.rarity_weights[i] then
+            SMODS.ObjectTypes.Joker.rarities[i].weight = AVE.rarity_weights[i]
+        end
+      end
+    end
     AVE.rarity_weights = {}
     
     AVE.MAP.limit         = nil
@@ -42,10 +50,10 @@ function SMODS.current_mod.reset_game_globals(start)
     AVE.rarity = nil
 end
 
-assert(SMODS.load_file("stages.lua"))()
-assert(SMODS.load_file("map_UI.lua"))()
-assert(SMODS.load_file("dunsparce.lua"))()
-assert(SMODS.load_file("map_functions.lua"))()
+assert(SMODS.load_file("stages.lua"))(AVE)
+assert(SMODS.load_file("map_UI.lua"))(AVE)
+assert(SMODS.load_file("dunsparce.lua"))(AVE)
+assert(SMODS.load_file("map_functions.lua"))(AVE)
 
 SMODS.Keybind {
   key_pressed = "g",

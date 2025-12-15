@@ -61,9 +61,6 @@ end
 match_indent = true
 times = 1
 
-
-
-
 [[patches]]
 [patches.pattern]
 target = "game.lua"
@@ -72,12 +69,47 @@ pattern = '''if self.STATE == self.STATES.MENU then
 end'''
 position = "after"
 payload = '''
+
 if self.STATE == 32 then
   Ave_Update_Map(dt)
+end
+
+'''
+match_indent = true
+times = 1
+
+# Saving the Map in save_run()
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = '''
+BACK = G.GAME.selected_back:save(),
+VERSION = G.VERSION
+'''
+position = "before"
+payload = '''
+MAP = AVE.MAP,
+'''
+match_indent = true
+times = 1
+
+# Reloading the Map in start_run()
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''
+self.consumeables = CardArea(
+'''
+position = "before"
+payload = '''
+if saveTable and saveTable.MAP then
+  AVE.MAP = saveTable.MAP
+  AVE.MAP.reloaded = true
 end
 '''
 match_indent = true
 times = 1
+
 
 [[patches]]
 [patches.pattern]
@@ -90,6 +122,9 @@ payload = '''
 match_indent = true
 times = 1
 
+
+
+# Map Pool Functions
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
@@ -256,41 +291,59 @@ times = 1
 [patches.pattern]
 target = "functions/UI_definitions.lua"
 pattern = '''
-G.SHOP_SIGN = UIBox{
-  definition = 
-    {n=G.UIT.ROOT, config = {colour = G.C.DYN_UI.MAIN, emboss = 0.05, align = 'cm', r = 0.1, padding = 0.1}, nodes={
-      {n=G.UIT.R, config={align = "cm", padding = 0.1, minw = 4.72, minh = 3.1, colour = G.C.DYN_UI.DARK, r = 0.1}, nodes={
-        {n=G.UIT.R, config={align = "cm"}, nodes={
-          {n=G.UIT.O, config={object = shop_sign}}
-        }},
-        {n=G.UIT.R, config={align = "cm"}, nodes={
-          {n=G.UIT.O, config={object = DynaText({string = {localize('ph_improve_run')}, colours = {lighten(G.C.GOLD, 0.3)},shadow = true, rotate = true, float = true, bump = true, scale = 0.5, spacing = 1, pop_in = 1.5, maxw = 4.3})}}
-        }},
-      }},
-    }},
-  config = {
-    align="cm",
-    offset = {x=0,y=-15},
-    major = G.HUD:get_UIE_by_ID('row_blind'),
-    bond = 'Weak'
-  }
-}
+G.E_MANAGER:add_event(Event({
+      trigger = 'immediate',
+      func = (function()
+          G.SHOP_SIGN.alignment.offset.y = 0
+          return true
+      end)
+    }))
+'''
+position = "before"
+payload = '''
+if AVE.MAP and AVE.MAP.current_stage then
+  ave_createShopStageUI()
+end
+'''
+match_indent = true
+times = 1
+
+# allow map to move off screen during consumable use
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''
+if G.round_eval and not G.round_eval.alignment.offset.py then
+      G.round_eval.alignment.offset.py = G.round_eval.alignment.offset.y
+      G.round_eval.alignment.offset.y = G.ROOM.T.y + 29
+    end
 '''
 position = "after"
 payload = '''
-if AVE.MAP and AVE.MAP.current_stage then
-  local ave_card = Card(0, -3, G.CARD_W*1.8, G.CARD_H*1.8, nil, AVE.MAP.current_stage)
-  ave_card.states.collide.can = true
-  ave_card.states.hover.can = true
-  ave_card.states.drag.can = false
-  ave_card.states.click.can = false
-  ave_shop_card = UIBox{
-      definition = {n=G.UIT.ROOT, config ={align = "cm", colour = G.C.CLEAR, padding = -0.25, minw = 3}, nodes={
-          {n=G.UIT.O, config={id = 'shop_card_sign', object = ave_card}}}},
-      config = {align='cm', offset = {x = 0.2, y = 0}, instance_type = 'CARDAREA',colour = G.C.CLEAR, major = G.SHOP_SIGN, bond = 'Strong', role_type = 'Minor'}
-    }
-	ave_card.children.center:set_role({major = G.SHOP_SIGN, role_type = 'Glued', draw_major = G.SHOP_SIGN})
-end
+if AVE.map and not AVE.map.alignment.offset.py then
+	  AVE.map.alignment.offset.py = AVE.map.alignment.offset.y
+	  AVE.map.alignment.offset.y = G.ROOM.T.y - 50
+	end
+'''
+match_indent = true
+times = 1
+
+# allow map to come back on screen during consumable use
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''
+if G.round_eval then
+                    G.round_eval.alignment.offset.y = G.round_eval.alignment.offset.py
+                    G.round_eval.alignment.offset.py = nil
+                  end
+'''
+position = "after"
+payload = '''
+if AVE.map then
+					AVE.map.alignment.offset.y = AVE.map.alignment.offset.py
+					AVE.map.alignment.offset.py = nil
+				  end
 '''
 match_indent = true
 times = 1
