@@ -79,6 +79,7 @@ function Ave_Update_Map(dt)
     if G.GAME.round_resets.blind_states.Small == 'Upcoming' then
       -- Follow the paths to selectable levels
       ave_followPaths()
+	  AVE.MAP.current_stage:remove()
       AVE.MAP.current_stage = nil
       -- Knock the first half of the rows off of the map (so we can generate new ones)
       if AVE.MAP.current_level[1] == map_cycle_level then
@@ -121,7 +122,7 @@ function Ave_Update_Map(dt)
     stop_use() -- prevent use of consumables
     ease_background_colour_blind(G.STATES.SHOP) --change background color
     AVE.map = UIBox{ -- this has to get redefined every time unfortunately, because it gets deleted after every selection
-      definition = createMapUI(), --definiton for shop UI, points to UI_definitions.lua
+      definition = createMapUI(),
       config = {id = 'MAINMAP', align = 'tm', major = G.ROOM_ATTACH, offset = {x = 2.75, y = -5}, bond = 'Weak', instance_type = 'CARDAREA'}
     }
     AVE.MAP.cardarea = CardArea(AVE.map.T.x, AVE.map.T.y, AVE.MAP.dim.w, AVE.MAP.dim.h * #AVE.MAP.levels,
