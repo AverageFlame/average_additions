@@ -722,7 +722,12 @@ SMODS.Stage {
       "Small chance for {V:1}Safari{} Pokemon"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.victory_road,
   rarity = 'ave_rare_stages',
@@ -764,7 +769,12 @@ SMODS.Stage {
       "Small chance for {V:1}Safari{} Pokemon"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.alph_ruins,
   rarity = 'ave_rare_stages',
@@ -806,7 +816,12 @@ SMODS.Stage {
       "Small chance for {V:1}Safari{} Pokemon"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.hgss_seafoam,
   rarity = 'ave_rare_stages',
@@ -848,7 +863,12 @@ SMODS.Stage {
       "Small chance for {V:1}Safari{} Pokemon"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.silph_co,
   rarity = 'ave_rare_stages',
@@ -890,7 +910,12 @@ SMODS.Stage {
       "Small chance for {V:1}Safari{} Pokemon"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.diglett_cave,
   rarity = 'ave_rare_stages',
@@ -932,7 +957,12 @@ SMODS.Stage {
       "Small chance for {V:1}Safari{} Pokemon"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.dark_cave,
   rarity = 'ave_rare_stages',
@@ -976,7 +1006,12 @@ SMODS.Stage {
       "{E:1,C:legendary}Celebi{} to appear"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.ilex_forest,
   rarity = 'ave_legendary_stages',
@@ -1026,7 +1061,12 @@ SMODS.Stage {
       "{E:1,C:legendary}Zapdos{} to appear"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.power_plant,
   rarity = 'ave_legendary_stages',
@@ -1076,7 +1116,12 @@ SMODS.Stage {
       "{E:1,C:legendary}Articuno{} to appear"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.seafoam,
   rarity = 'ave_legendary_stages',
@@ -1126,7 +1171,12 @@ SMODS.Stage {
       "{E:1,C:legendary}Moltres{} to appear"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.mt_ember,
   rarity = 'ave_legendary_stages',
@@ -1176,7 +1226,12 @@ SMODS.Stage {
       "{E:1,C:legendary}Mewtwo{} to appear"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.cerulean_cave,
   rarity = 'ave_legendary_stages',
@@ -1226,7 +1281,12 @@ SMODS.Stage {
       "{E:1,C:legendary}Entei{} to appear"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.burned_tower,
   rarity = 'ave_legendary_stages',
@@ -1276,7 +1336,12 @@ SMODS.Stage {
       "{E:1,C:legendary}Lugia{} to appear"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.whirl_islands,
   rarity = 'ave_legendary_stages',
@@ -1326,7 +1391,12 @@ SMODS.Stage {
       "{E:1,C:legendary}Ho-Oh{} to appear"
     }
   },
-  loc_vars = { colours = {safari_color}},
+  loc_vars = function(self, info_queue, card)
+	return
+	{
+		vars = { colours = {safari_color} }
+	}
+  end,
   atlas = 'atlas_stages',
   pos = AVE.BG.bell_tower,
   rarity = 'ave_legendary_stages',
